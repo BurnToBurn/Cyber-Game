@@ -647,7 +647,7 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                         : 'bg-[#101927] hover:bg-[#18263a] border border-[#1e293b]/40'
                     }`}
                     style={{
-                      zIndex: (x + y) * 2
+                      zIndex: 1
                     }}
                   >
                     {/* Carpet Texture */}
@@ -839,11 +839,12 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                 <div
                   key={entity.id}
                   onClick={() => onInteractEntity(entity)}
-                  className="absolute pointer-events-auto cursor-pointer z-25 flex flex-col items-center justify-center"
+                  className="absolute pointer-events-auto cursor-pointer flex flex-col items-center justify-center"
                   style={{
                     left: `${leftPercent}%`,
                     top: `${topPercent}%`,
-                    transform: 'translate(-50%, -50%)'
+                    transform: 'translate(-50%, -50%)',
+                    zIndex: Math.floor(entity.y * 10) + 20
                   }}
                 >
                   {/* Proximity Pulsing Ring */}
@@ -998,11 +999,12 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                 <div
                   key={peer.id}
                   onClick={() => setInspectedPeer(peer)}
-                  className="absolute pointer-events-auto cursor-pointer z-30 flex flex-col items-center justify-center transition-all duration-300"
+                  className="absolute pointer-events-auto cursor-pointer flex flex-col items-center justify-center transition-all duration-300"
                   style={{
                     left: `${leftPercent}%`,
                     top: `${topPercent}%`,
-                    transform: 'translate(-50%, -50%)'
+                    transform: 'translate(-50%, -50%)',
+                    zIndex: Math.floor(peer.pos.y * 10) + 30
                   }}
                 >
                   {/* Proximity Ring */}
@@ -1039,11 +1041,12 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
             {/* FREEFORM PLAYER SPRITE (Smooth Continuous Position) */}
             {/* ============================================================= */}
             <div
-              className="absolute pointer-events-none z-35 flex flex-col items-center justify-center transition-transform"
+              className="absolute pointer-events-none flex flex-col items-center justify-center transition-transform"
               style={{
                 left: `${(playerPos.x / mapGrid.width) * 100}%`,
                 top: `${(playerPos.y / mapGrid.height) * 100}%`,
-                transform: 'translate(-50%, -50%)'
+                transform: 'translate(-50%, -50%)',
+                zIndex: Math.floor(playerPos.y * 10) + 50
               }}
             >
               {/* Coffee Speed Aura */}
