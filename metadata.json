@@ -1,0 +1,6 @@
+{
+  "name": "CyberFloor: Office Roguelike",
+  "description": "A modern-retro office roguelike security training game with freeform movement, 24-hour daily missions, multi-user branch leaderboards, procedural 2.5D floors, interactive phishing and social engineering encounters, and The Office themed props and operative roster.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

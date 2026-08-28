@@ -1,0 +1,220 @@
+@import "tailwindcss";
+
+:root {
+  --line: #1e293b;
+  --f-pixel: 'Press Start 2P', monospace;
+  --f-arcade: 'Silkscreen', cursive;
+  --f-retro: 'VT323', monospace;
+  --f-tech: 'Chakra Petch', sans-serif;
+}
+
+/* Retro Font Utilities */
+.font-pixel {
+  font-family: 'Press Start 2P', monospace;
+  letter-spacing: -0.05em;
+}
+
+.font-arcade {
+  font-family: 'Silkscreen', cursive;
+  letter-spacing: 0.05em;
+}
+
+.font-retro {
+  font-family: 'VT323', monospace;
+  letter-spacing: 0.05em;
+}
+
+.font-tech {
+  font-family: 'Chakra Petch', sans-serif;
+}
+
+/* 2.5D Isometric Diorama & Stage */
+.isometric-stage {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.isometric-grid {
+  transform: rotateX(58deg) rotateZ(-45deg) scale(1);
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.ortho-grid {
+  transform: rotateX(0deg) rotateZ(0deg) scale(1);
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* 2.5D Tile Elevation & Depth */
+.iso-tile-slab {
+  position: relative;
+  box-shadow: 
+    -2px 2px 0px rgba(0, 0, 0, 0.4),
+    -4px 4px 0px rgba(0, 0, 0, 0.3),
+    -6px 6px 0px rgba(0, 0, 0, 0.2);
+}
+
+.iso-tile-wall {
+  box-shadow: 
+    -4px 4px 0px #0b0f19,
+    -8px 8px 0px #06090e,
+    -12px 12px 16px rgba(0, 0, 0, 0.6);
+}
+
+.iso-elevation-1 {
+  transform: translateZ(8px);
+}
+
+.iso-elevation-2 {
+  transform: translateZ(16px);
+}
+
+.iso-elevation-3 {
+  transform: translateZ(24px);
+}
+
+.iso-billboard {
+  transform: rotateZ(45deg) rotateX(-58deg);
+  transform-origin: bottom center;
+  transition: transform 0.2s ease;
+}
+
+.iso-shadow {
+  filter: drop-shadow(-8px 12px 6px rgba(0, 0, 0, 0.5));
+}
+
+/* CRT Screen FX & Scanlines */
+.crt-overlay {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.03),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.03)
+  );
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+}
+
+.crt-bloom {
+  text-shadow: 0 0 8px currentColor, 0 0 16px currentColor;
+}
+
+.screen-flicker {
+  animation: flicker 0.15s infinite;
+}
+
+@keyframes flicker {
+  0% { opacity: 0.98; }
+  50% { opacity: 1; }
+  100% { opacity: 0.97; }
+}
+
+/* Retro Arcade Pixel Borders */
+.pixel-box {
+  border: 4px solid #1e293b;
+  box-shadow: 
+    inset -4px -4px 0px 0px #0f172a,
+    inset 4px 4px 0px 0px #334155,
+    0 8px 0px 0px rgba(0,0,0,0.5);
+}
+
+.pixel-box-cyan {
+  border: 4px solid #0284c7;
+  box-shadow: 
+    inset -4px -4px 0px 0px #0369a1,
+    inset 4px 4px 0px 0px #38bdf8,
+    0 8px 0px 0px rgba(2, 132, 199, 0.3);
+}
+
+.pixel-box-amber {
+  border: 4px solid #d97706;
+  box-shadow: 
+    inset -4px -4px 0px 0px #b45309,
+    inset 4px 4px 0px 0px #fbbf24,
+    0 8px 0px 0px rgba(217, 119, 6, 0.3);
+}
+
+.pixel-box-red {
+  border: 4px solid #dc2626;
+  box-shadow: 
+    inset -4px -4px 0px 0px #991b1b,
+    inset 4px 4px 0px 0px #f87171,
+    0 8px 0px 0px rgba(220, 38, 38, 0.4);
+}
+
+.pixel-btn {
+  position: relative;
+  transition: all 0.08s ease-in-out;
+  box-shadow: 0 4px 0px #0f172a;
+}
+
+.pixel-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 0px 0px #0f172a;
+}
+
+/* Floating Bob & Breath Animations */
+@keyframes bob {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-bob {
+  animation: bob 2s ease-in-out infinite;
+}
+
+@keyframes steam {
+  0% { opacity: 0.8; transform: translateY(0px) scale(1); }
+  100% { opacity: 0; transform: translateY(-16px) scale(1.6); }
+}
+
+.animate-steam {
+  animation: steam 1.8s infinite ease-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.15); }
+}
+
+.animate-pulseGlow {
+  animation: pulseGlow 2.4s infinite ease-in-out;
+}
+
+/* Background Grids */
+.grid-lines {
+  background-image: 
+    linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px), 
+    linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.grid-lines-dark {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), 
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Custom Scrollbars for Retro Terminal Feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b0f19;
+  border: 1px solid #1e293b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border: 2px solid #0b0f19;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
