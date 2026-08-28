@@ -28,61 +28,6 @@
   font-family: 'Chakra Petch', sans-serif;
 }
 
-/* 2.5D Isometric Diorama & Stage */
-.isometric-stage {
-  perspective: 1200px;
-  transform-style: preserve-3d;
-}
-
-.isometric-grid {
-  transform: rotateX(58deg) rotateZ(-45deg) scale(1);
-  transform-style: preserve-3d;
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.ortho-grid {
-  transform: rotateX(0deg) rotateZ(0deg) scale(1);
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-/* 2.5D Tile Elevation & Depth */
-.iso-tile-slab {
-  position: relative;
-  box-shadow: 
-    -2px 2px 0px rgba(0, 0, 0, 0.4),
-    -4px 4px 0px rgba(0, 0, 0, 0.3),
-    -6px 6px 0px rgba(0, 0, 0, 0.2);
-}
-
-.iso-tile-wall {
-  box-shadow: 
-    -4px 4px 0px #0b0f19,
-    -8px 8px 0px #06090e,
-    -12px 12px 16px rgba(0, 0, 0, 0.6);
-}
-
-.iso-elevation-1 {
-  transform: translateZ(8px);
-}
-
-.iso-elevation-2 {
-  transform: translateZ(16px);
-}
-
-.iso-elevation-3 {
-  transform: translateZ(24px);
-}
-
-.iso-billboard {
-  transform: rotateZ(45deg) rotateX(-58deg);
-  transform-origin: bottom center;
-  transition: transform 0.2s ease;
-}
-
-.iso-shadow {
-  filter: drop-shadow(-8px 12px 6px rgba(0, 0, 0, 0.5));
-}
-
 /* CRT Screen FX & Scanlines */
 .crt-overlay {
   background: linear-gradient(

@@ -6,7 +6,7 @@ import {
   Terminal, PhoneCall, HardDrive, Lock, Coffee, 
   Sparkles, DoorOpen, Play, ChevronUp, ChevronDown, 
   ChevronLeft, ChevronRight, Zap, Info, ShieldAlert, 
-  Volume2, VolumeX, Eye, Compass, Layers, Monitor,
+  Volume2, VolumeX, Eye, Monitor,
   Radio, User, HelpCircle, Activity, ZoomIn, ZoomOut,
   Users, UserCheck, Award, MessageSquare, Handshake, Target
 } from 'lucide-react';
@@ -82,7 +82,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
   const [flashSiren, setFlashSiren] = useState<boolean>(false);
   const [showRosterModal, setShowRosterModal] = useState<boolean>(false);
   const [showNpcRosterDrawer, setShowNpcRosterDrawer] = useState<boolean>(false);
-  const [viewMode, setViewMode] = useState<'ISOMETRIC_25D' | 'ORTHO_2D'>('ISOMETRIC_25D');
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [crtEnabled, setCrtEnabled] = useState<boolean>(true);
   const [easterEggToast, setEasterEggToast] = useState<string | null>(null);
@@ -305,12 +304,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
           setInspectedPeer(nearbyPeer);
         }
       }
-
-      if (e.key === 'v' || e.key === 'V') {
-        e.preventDefault();
-        setViewMode(prev => prev === 'ISOMETRIC_25D' ? 'ORTHO_2D' : 'ISOMETRIC_25D');
-        audio.playClick();
-      }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
@@ -454,12 +447,10 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
             <span className="text-[#38bdf8] font-bold">[WASD / Click Floor]</span> Free Move
             <span className="text-slate-500">•</span>
             <span className="text-emerald-400 font-bold">[E / Space]</span> Interact
-            <span className="text-slate-500">•</span>
-            <span className="text-purple-400 font-bold">[V]</span> 2.5D Mode
           </div>
         </div>
 
-        {/* Right Side: Navigation & Perspective Controls */}
+        {/* Right Side: Navigation & Audio Controls */}
         <div className="flex items-center gap-2">
           {/* Operative Roster Switcher */}
           <button
@@ -491,23 +482,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
             <span className="text-xs">🏆</span>
             <span className="hidden sm:inline">PROPS:</span>
             <span className="text-yellow-400 font-bold">{(playerStats.collectedProps?.length || 0) + (playerStats.dundieAwards?.length || 0)}</span>
-          </button>
-
-          {/* Perspective View Mode Toggle */}
-          <button
-            onClick={() => {
-              audio.playClick();
-              setViewMode(prev => prev === 'ISOMETRIC_25D' ? 'ORTHO_2D' : 'ISOMETRIC_25D');
-            }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 font-pixel text-[9px] uppercase tracking-wider border-2 transition-all cursor-pointer shadow-md ${
-              viewMode === 'ISOMETRIC_25D'
-                ? 'bg-[#0284c7] text-white border-[#38bdf8] hover:bg-[#0369a1]'
-                : 'bg-[#1e293b] text-slate-300 border-[#475569] hover:bg-[#334155]'
-            }`}
-            title="Toggle between 2.5D Isometric Diorama and Top-Down Ortho"
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span>{viewMode === 'ISOMETRIC_25D' ? '2.5D DIORAMA' : 'ORTHO 2D'}</span>
           </button>
 
           {/* Zoom Controls */}
@@ -633,32 +607,19 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
         </div>
       )}
 
-      {/* Main 2.5D Isometric Diorama Stage Canvas */}
+      {/* Main Ortho 2D Stage Canvas */}
       <div 
-        className="relative flex-1 w-full max-w-6xl max-h-[82vh] flex items-center justify-center overflow-hidden isometric-stage mt-6 sm:mt-8"
+        className="relative flex-1 w-full max-w-6xl max-h-[82vh] flex items-center justify-center overflow-hidden mt-6 sm:mt-8"
         style={{ transform: `scale(${zoomLevel})` }}
       >
-        {/* Isometric Stage Frame */}
+        {/* Ortho 2D Stage Frame */}
         <div
-          className={`relative transition-all duration-500 ease-out ${
-            viewMode === 'ISOMETRIC_25D' ? 'isometric-grid' : 'ortho-grid'
-          }`}
+          className="relative transition-all duration-300 ease-out"
           style={{ transformOrigin: 'center center' }}
         >
-          {/* Foundation Base */}
-          {viewMode === 'ISOMETRIC_25D' && (
-            <div 
-              className="absolute -inset-4 bg-[#070a12] border-4 border-[#1e293b] rounded-sm pointer-events-none"
-              style={{
-                transform: 'translateZ(-28px)',
-                boxShadow: '-12px 12px 0px #030508, -24px 24px 32px rgba(0,0,0,0.8)'
-              }}
-            />
-          )}
-
           {/* Office Floor Tile Grid */}
           <div
-            className="grid gap-[2px] bg-[#0c101d] p-3 border-2 border-[#1e293b] rounded-sm relative"
+            className="grid gap-[2px] bg-[#0c101d] p-3 border-2 border-[#1e293b] rounded-sm relative shadow-2xl"
             style={{
               gridTemplateColumns: `repeat(${mapGrid.width}, minmax(0, 1fr))`
             }}
@@ -676,17 +637,16 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                     }}
                     className={`w-9 h-9 sm:w-11 sm:h-11 md:w-13 md:h-13 lg:w-14 lg:h-14 flex items-center justify-center relative cursor-pointer select-none transition-all duration-150 ${
                       tile === 'WALL'
-                        ? 'bg-[#080d18] border border-[#1e293b] iso-tile-wall'
+                        ? 'bg-[#080d18] border border-[#1e293b]'
                         : tile === 'CARPET'
-                        ? 'bg-[#152336] hover:bg-[#1c304a] border border-[#1e293b]/60 iso-tile-slab'
+                        ? 'bg-[#152336] hover:bg-[#1c304a] border border-[#1e293b]/60'
                         : tile === 'WINDOW'
                         ? 'bg-[#0e2a47] border-b-4 border-[#38bdf8] overflow-hidden'
                         : tile === 'RESTROOM'
-                        ? 'bg-[#1e1b4b] border border-[#818cf8]/40 iso-tile-slab'
-                        : 'bg-[#101927] hover:bg-[#18263a] border border-[#1e293b]/40 iso-tile-slab'
+                        ? 'bg-[#1e1b4b] border border-[#818cf8]/40'
+                        : 'bg-[#101927] hover:bg-[#18263a] border border-[#1e293b]/40'
                     }`}
                     style={{
-                      transformStyle: 'preserve-3d',
                       zIndex: (x + y) * 2
                     }}
                   >
@@ -710,7 +670,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                     {tile === 'DESK' && (
                       <div 
                         className="w-[90%] h-[90%] bg-[#2d1b10] border-2 border-[#6d4323] rounded-sm flex flex-col items-center justify-center p-0.5 shadow-md"
-                        style={{ transform: viewMode === 'ISOMETRIC_25D' ? 'translateZ(10px)' : 'none' }}
                       >
                         <div className="flex gap-1 items-center mb-0.5">
                           <div className="w-2.5 h-2 bg-[#0284c7] border border-[#38bdf8] shadow-[0_0_6px_#38bdf8]" />
@@ -728,7 +687,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                           handlePropClick('Jell-O Stapler', 'Dwight: "DAMMIT JIM! He put my stapler in Jell-O again!" (+10 XP)');
                         }}
                         className="flex flex-col items-center justify-center cursor-pointer group"
-                        style={{ transform: viewMode === 'ISOMETRIC_25D' ? 'translateZ(12px)' : 'none' }}
                         title="Jim's Stapler in Jell-O Prank"
                       >
                         <div className="w-7 h-7 bg-amber-400/80 border-2 border-amber-300 rounded-lg flex items-center justify-center shadow-[0_0_10px_#f59e0b] group-hover:scale-110 transition-transform">
@@ -746,7 +704,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                           handlePropClick('Dundie Trophy Display', 'Michael: "The Dundies are about celebrating the best in all of us!" (+15 XP)');
                         }}
                         className="flex flex-col items-center justify-center cursor-pointer group animate-bob"
-                        style={{ transform: viewMode === 'ISOMETRIC_25D' ? 'translateZ(14px)' : 'none' }}
                         title="Dundie Awards Showcase"
                       >
                         <div className="w-7 h-7 bg-gradient-to-t from-amber-600 to-yellow-300 border-2 border-yellow-200 rounded-sm flex items-center justify-center shadow-[0_0_12px_#fbbf24] group-hover:scale-115 transition-transform">
@@ -760,7 +717,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                     {tile === 'PAPER_STACK' && (
                       <div 
                         className="w-[85%] h-[85%] bg-slate-100 border-2 border-slate-400 rounded-sm flex flex-col items-center justify-center p-0.5 shadow-md"
-                        style={{ transform: viewMode === 'ISOMETRIC_25D' ? 'translateZ(8px)' : 'none' }}
                       >
                         <div className="w-5 h-2 bg-blue-600 text-[5px] text-white font-bold flex items-center justify-center">
                           DM 24LB
@@ -772,7 +728,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                     {tile === 'SERVER' && (
                       <div 
                         className="w-[85%] h-[85%] bg-[#080d1a] border-2 border-[#0284c7] rounded-sm flex flex-col items-center justify-between p-1 shadow-[0_0_12px_rgba(2,132,199,0.3)]"
-                        style={{ transform: viewMode === 'ISOMETRIC_25D' ? 'translateZ(18px)' : 'none' }}
                       >
                         <div className="w-full flex justify-between px-0.5">
                           <div className="w-1 h-1 rounded-full bg-[#38bdf8] animate-ping" />
@@ -791,7 +746,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                     {tile === 'RESTROOM' && (
                       <div 
                         className="w-[90%] h-[90%] bg-[#1e1b4b] border-2 border-[#818cf8]/70 rounded-sm flex flex-col items-center justify-center p-0.5 shadow-md relative overflow-hidden"
-                        style={{ transform: viewMode === 'ISOMETRIC_25D' ? 'translateZ(10px)' : 'none' }}
                       >
                         <span className="text-xs filter drop-shadow">🚻</span>
                         <span className="text-[6px] font-pixel text-[#c7d2fe]">RESTROOM</span>
@@ -802,7 +756,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                     {tile === 'PLANT' && (
                       <div 
                         className="flex flex-col items-center justify-center animate-bob"
-                        style={{ transform: viewMode === 'ISOMETRIC_25D' ? 'translateZ(12px)' : 'none' }}
                       >
                         <span className="text-sm sm:text-base filter drop-shadow-md">🪴</span>
                       </div>
@@ -812,7 +765,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                     {tile === 'COFFEE_STATION' && (
                       <div 
                         className="flex flex-col items-center justify-center relative"
-                        style={{ transform: viewMode === 'ISOMETRIC_25D' ? 'translateZ(14px)' : 'none' }}
                       >
                         <div className="absolute -top-3 w-1.5 h-1.5 bg-white/70 rounded-full animate-steam" />
                         <span className="text-sm sm:text-base filter drop-shadow-md">☕</span>
@@ -823,7 +775,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                     {tile === 'WATER_COOLER' && (
                       <div 
                         className="flex flex-col items-center justify-center"
-                        style={{ transform: viewMode === 'ISOMETRIC_25D' ? 'translateZ(12px)' : 'none' }}
                       >
                         <span className="text-sm sm:text-base filter drop-shadow-md">🚰</span>
                       </div>
@@ -833,7 +784,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                     {tile === 'WHITEBOARD' && (
                       <div 
                         className="w-[85%] h-[85%] bg-white border-2 border-slate-400 flex items-center justify-center shadow-sm"
-                        style={{ transform: viewMode === 'ISOMETRIC_25D' ? 'translateZ(14px)' : 'none' }}
                       >
                         <span className="text-[10px]">📊</span>
                       </div>
@@ -841,7 +791,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                     {tile === 'PRINTER' && (
                       <div 
                         className="w-[85%] h-[85%] bg-slate-800 border-2 border-slate-600 flex items-center justify-center shadow-sm"
-                        style={{ transform: viewMode === 'ISOMETRIC_25D' ? 'translateZ(10px)' : 'none' }}
                       >
                         <span className="text-xs">🖨️</span>
                       </div>
@@ -851,7 +800,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                     {tile === 'ELEVATOR' && (
                       <div 
                         className="w-full h-full bg-[#064e3b] border-2 border-[#10b981] flex flex-col items-center justify-center text-xs relative overflow-hidden shadow-[0_0_12px_rgba(16,185,129,0.4)]"
-                        style={{ transform: viewMode === 'ISOMETRIC_25D' ? 'translateZ(8px)' : 'none' }}
                       >
                         <DoorOpen className="w-4 h-4 text-[#34d399]" />
                         <span className="text-[8px] font-pixel text-[#34d399]">EXIT</span>
@@ -895,7 +843,7 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                   style={{
                     left: `${leftPercent}%`,
                     top: `${topPercent}%`,
-                    transform: `translate(-50%, -50%) ${viewMode === 'ISOMETRIC_25D' ? 'translateZ(22px)' : ''}`
+                    transform: 'translate(-50%, -50%)'
                   }}
                 >
                   {/* Proximity Pulsing Ring */}
@@ -1054,7 +1002,7 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                   style={{
                     left: `${leftPercent}%`,
                     top: `${topPercent}%`,
-                    transform: `translate(-50%, -50%) ${viewMode === 'ISOMETRIC_25D' ? 'translateZ(26px)' : ''}`
+                    transform: 'translate(-50%, -50%)'
                   }}
                 >
                   {/* Proximity Ring */}
@@ -1095,7 +1043,7 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
               style={{
                 left: `${(playerPos.x / mapGrid.width) * 100}%`,
                 top: `${(playerPos.y / mapGrid.height) * 100}%`,
-                transform: `translate(-50%, -50%) ${viewMode === 'ISOMETRIC_25D' ? 'translateZ(28px)' : ''}`
+                transform: 'translate(-50%, -50%)'
               }}
             >
               {/* Coffee Speed Aura */}
