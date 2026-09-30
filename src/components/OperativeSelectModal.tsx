@@ -51,7 +51,7 @@ export const OperativeSelectModal: React.FC<OperativeSelectModalProps> = ({
         <div className="bg-[#070a12] p-3 sm:px-6 border-b-2 border-[#1e293b] flex items-center justify-between">
           <div>
             <h2 className="font-arcade text-sm sm:text-base text-white">SELECT ACTIVE OPERATIVE</h2>
-            <p className="font-tech text-xs text-slate-400">Choose your Scranton SecOps specialist avatar for floor patrols and security audits.</p>
+            <p className="font-tech text-xs text-slate-400">Choose your security specialist for floor patrols and challenges.</p>
           </div>
           <div className="font-pixel text-[8px] sm:text-[9px] px-2.5 py-1 bg-[#0284c7]/20 border border-[#38bdf8] text-[#38bdf8]">
             {PLAYABLE_OPERATIVES.length} SPECIALISTS READY

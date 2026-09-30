@@ -2,13 +2,6 @@ import React from 'react';
 
 export type CharacterId = 
   | 'player_alex' 
-  | 'player_dwight'
-  | 'player_jim'
-  | 'player_pam'
-  | 'player_michael'
-  | 'player_stanley'
-  | 'player_angela'
-  | 'player_kevin'
   | 'player_maya' 
   | 'player_jordan' 
   | 'player_samira'
@@ -17,6 +10,16 @@ export type CharacterId =
   | 'npc_dave' 
   | 'npc_marcus' 
   | 'npc_karen';
+
+const LEGACY_OPERATIVE_IDS = new Set([
+  'player_dwight',
+  'player_jim',
+  'player_pam',
+  'player_michael',
+  'player_stanley',
+  'player_angela',
+  'player_kevin'
+]);
 
 export interface OperativeProfile {
   id: CharacterId;
@@ -32,99 +35,44 @@ export interface OperativeProfile {
 
 export const PLAYABLE_OPERATIVES: OperativeProfile[] = [
   {
-    id: 'player_dwight',
-    name: 'Dwight K. Schrute',
-    callsign: 'RECYCLED_BEET',
-    role: 'Assistant TO the Regional Security Manager',
-    color: '#854d0e',
-    accentColor: '#fbbf24',
-    description: 'Master of physical desk security, volunteer sheriff deputy, and zero-tolerance policy enforcer.',
-    specialty: '+30% Clean Desk & Sticky Note Detection Range',
-    quote: '"Question: What bear is best? False. Black bear."'
-  },
-  {
-    id: 'player_jim',
-    name: 'Jim Halpert',
-    callsign: 'TUNA',
-    role: 'Sr. Social Engineering Investigator',
-    color: '#0284c7',
-    accentColor: '#38bdf8',
-    description: 'Specialist in dissecting social engineering pretexts, caller agitation, and baiting pranks.',
-    specialty: '+25% Vishing Caller Verification Speed',
-    quote: '"I am about to do a prank on this phishing link."'
-  },
-  {
-    id: 'player_pam',
-    name: 'Pam Beesly',
-    callsign: 'BEESLY',
-    role: 'Floor Admin & Reception Security Lead',
-    color: '#db2777',
-    accentColor: '#f472b6',
-    description: 'Keeps reception pristine, guards building turnstiles, and manages office threat communications.',
-    specialty: '+20% Morale Recovery & Coffee Speed Boost',
-    quote: '"Dunder Mifflin Scranton SecOps, this is Pam."'
-  },
-  {
-    id: 'player_michael',
-    name: 'Michael Scott',
-    callsign: 'AGENT_SCARN',
-    role: 'Regional Cyber Commander (World\'s Best Boss)',
-    color: '#1e3a8a',
-    accentColor: '#60a5fa',
-    description: 'Creator of "Threat Level Midnight". Inspires the team with unbridled optimism and Dundie awards.',
-    specialty: 'Dundie Trophy Bonus Multiplier',
-    quote: '"Threat Level Midnight is now in full effect."'
-  },
-  {
-    id: 'player_stanley',
-    name: 'Stanley Hudson',
-    callsign: 'PRETZEL',
-    role: 'Crossword & Phishing Triage Veteran',
-    color: '#78350f',
-    accentColor: '#d97706',
-    description: 'Utterly immune to urgency tactics. Will not click links under any circumstances.',
-    specialty: '+35% Resistance to High-Pressure Vishing',
-    quote: '"Do not click that link. It is pretzel day."'
-  },
-  {
     id: 'player_alex',
     name: 'Alex Chen',
-    callsign: 'SPECTRE',
-    role: 'HNB & Scranton Core Banking Analyst',
+    callsign: 'ANALYST',
+    role: 'Security analyst',
     color: '#00693e',
     accentColor: '#34d399',
-    description: 'Specializes in Fedwire header forensics, ISO 20022 message authentication, and lookalike domain detection.',
-    specialty: '+15% Banking Domain Triage Speed'
+    description: 'Investigates suspicious messages and protects company accounts.',
+    specialty: 'Phishing investigation'
   },
   {
     id: 'player_maya',
     name: 'Maya Lin',
-    callsign: 'CIPHER',
-    role: 'HNB Malware Forensics Lead',
+    callsign: 'FORENSICS',
+    role: 'Malware analyst',
     color: '#d946ef',
     accentColor: '#f472b6',
-    description: 'Expert in dissecting banking trojans (Qakbot/Emotet) and air-gapped ATM firmware payload detonation.',
-    specialty: '+20% Sandbox Payload Detection'
+    description: 'Examines suspicious files in a safe environment.',
+    specialty: 'Malware analysis'
   },
   {
     id: 'player_jordan',
     name: 'Jordan Cruz',
-    callsign: 'VANGUARD',
-    role: 'HNB Incident Commander',
+    callsign: 'RESPONSE',
+    role: 'Incident responder',
     color: '#d97706',
     accentColor: '#fbbf24',
-    description: 'Floor commander with ironclad resistance to Helpdesk vishing, wire fraud pretexting, and caller agitation.',
-    specialty: '+25% Dual-Control Vishing De-escalation'
+    description: 'Coordinates the response when an attack is detected.',
+    specialty: 'Incident response'
   },
   {
     id: 'player_samira',
     name: 'Samira Khan',
-    callsign: 'SHADOW',
-    role: 'HNB ATM & Branch PenTester',
+    callsign: 'DEFENDER',
+    role: 'Security engineer',
     color: '#059669',
     accentColor: '#6ee7b7',
-    description: 'Specialist in branch physical security, detecting baiting USB drops near ATM vestibules, and GLBA clean desk audits.',
-    specialty: '+20% Patrol Speed & GLBA Scan Range'
+    description: 'Helps secure devices, accounts, and the workplace.',
+    specialty: 'Security operations'
   }
 ];
 
@@ -148,7 +96,8 @@ export const PixelCharacter: React.FC<PixelCharacterProps> = ({
   className = ''
 }) => {
   // Normalize id
-  const charId = id.startsWith('npc_') ? id : id.startsWith('player_') ? id : `player_${id}`;
+  const requestedId = id.startsWith('npc_') ? id : id.startsWith('player_') ? id : `player_${id}`;
+  const charId = LEGACY_OPERATIVE_IDS.has(requestedId) ? 'player_alex' : requestedId;
 
   const isFlipped = direction === 'LEFT';
 
@@ -168,7 +117,7 @@ export const PixelCharacter: React.FC<PixelCharacterProps> = ({
   const renderCharacterPixels = () => {
     switch (charId) {
       // ==========================================
-      // OPERATIVE: Dwight K. Schrute (Mustard Shirt, Brown Tie, Wire Glasses, Center Part)
+      // Legacy avatar
       // ==========================================
       case 'player_dwight':
         return (
@@ -215,7 +164,7 @@ export const PixelCharacter: React.FC<PixelCharacterProps> = ({
         );
 
       // ==========================================
-      // OPERATIVE: Jim Halpert (Blue Oxford, Messy Hair, Sideways Smirk)
+      // Legacy avatar
       // ==========================================
       case 'player_jim':
         return (
@@ -245,7 +194,7 @@ export const PixelCharacter: React.FC<PixelCharacterProps> = ({
             <rect x="6" y={4 + walkBobY} width="12" height="3" fill="#451a03" />
             <rect x="16" y={4 + walkBobY} width="3" height="3" fill="#451a03" />
 
-            {/* Jim's Signature Camera Stare Eyes & Smirk */}
+            {/* Facial features */}
             <rect x="8.5" y={9 + walkBobY} width="1.8" height="1.5" fill="#1c1917" />
             <rect x="13.5" y={9 + walkBobY} width="1.8" height="1.5" fill="#1c1917" />
             <line x1="10" y1={12.5 + walkBobY} x2="14" y2={12 + walkBobY} stroke="#78350f" strokeWidth="0.8" />
@@ -253,7 +202,7 @@ export const PixelCharacter: React.FC<PixelCharacterProps> = ({
         );
 
       // ==========================================
-      // OPERATIVE: Pam Beesly (Pink Cardigan, White Blouse, Wavy Hair)
+      // Legacy avatar
       // ==========================================
       case 'player_pam':
         return (
@@ -269,7 +218,7 @@ export const PixelCharacter: React.FC<PixelCharacterProps> = ({
             {/* Torso: Pastel Pink Knit Cardigan over White Blouse */}
             <rect x="6" y={13 + walkBobY} width="12" height="9" fill="#f472b6" rx="1" />
             <polygon points={`9,${13 + walkBobY} 15,${13 + walkBobY} 12,${18 + walkBobY}`} fill="#ffffff" />
-            {/* Lanyard & Dunder Mifflin Badge */}
+            {/* Lanyard and badge */}
             <line x1="12" y1={13 + walkBobY} x2="12" y2={19 + walkBobY} stroke="#3b82f6" strokeWidth="0.7" />
             <rect x="11" y={19 + walkBobY} width="2" height="2.5" fill="#e2e8f0" stroke="#1e3a8a" strokeWidth="0.3" />
 
@@ -293,7 +242,7 @@ export const PixelCharacter: React.FC<PixelCharacterProps> = ({
         );
 
       // ==========================================
-      // OPERATIVE: Michael Scott (Navy Suit, Striped Tie, World's Best Boss Mug)
+      // Legacy avatar
       // ==========================================
       case 'player_michael':
         return (
@@ -311,7 +260,7 @@ export const PixelCharacter: React.FC<PixelCharacterProps> = ({
             <polygon points={`11,${14 + walkBobY} 13,${14 + walkBobY} 13.5,${21 + walkBobY} 12,${23 + walkBobY} 10.5,${21 + walkBobY}`} fill="#2563eb" />
             <line x1="11" y1={16 + walkBobY} x2="13" y2={16 + walkBobY} stroke="#ffffff" strokeWidth="0.5" />
 
-            {/* Left Arm & Right Hand with "World's Best Boss" Mug */}
+            {/* Coffee mug */}
             <rect x="3.5" y={14 + walkBobY} width="2.5" height="6" fill="#1e3a8a" />
             <rect x="3.5" y={20 + walkBobY} width="2.5" height="2" fill="#fed7aa" />
             
@@ -334,7 +283,7 @@ export const PixelCharacter: React.FC<PixelCharacterProps> = ({
         );
 
       // ==========================================
-      // OPERATIVE: Stanley Hudson (Brown Suit, Mustache, Crossword)
+      // Legacy avatar
       // ==========================================
       case 'player_stanley':
         return (

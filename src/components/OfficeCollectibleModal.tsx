@@ -93,7 +93,7 @@ export const OfficeCollectibleModal: React.FC<OfficeCollectibleModalProps> = ({
             </p>
           </div>
 
-          {/* Iconic Quote Callout */}
+          {/* Item details */}
           <div className="w-full bg-[#030712] border-l-4 border-amber-400 p-3 text-left rounded-r shadow-inner">
             <div className="text-[10px] font-pixel text-amber-400 uppercase">
               {collectible.character}
@@ -115,16 +115,16 @@ export const OfficeCollectibleModal: React.FC<OfficeCollectibleModalProps> = ({
             <div className="bg-[#0f172a] border border-[#334155] p-2 rounded flex items-center gap-2">
               <Coins className="w-4 h-4 text-emerald-400 shrink-0" />
               <div className="text-left">
-                <div className="text-[8px] font-pixel text-slate-400 uppercase">SCHRUTE BUCKS</div>
-                <div className="font-bold text-emerald-300 font-mono">+{collectible.rewardSchruteBucks} SB</div>
+                  <div className="text-[8px] font-pixel text-slate-400 uppercase">BONUS TOKENS</div>
+                  <div className="font-bold text-emerald-300 font-mono">+{collectible.rewardTokens}</div>
               </div>
             </div>
           </div>
 
-          {collectible.dundieTitle && (
+          {collectible.awardTitle && (
             <div className="w-full bg-gradient-to-r from-amber-500/20 via-yellow-500/30 to-amber-500/20 border border-yellow-400/60 p-2 rounded flex items-center justify-center gap-2 text-yellow-300 text-xs font-pixel">
               <Award className="w-4 h-4 text-yellow-300" />
-              <span>AWARDED: {collectible.dundieTitle}</span>
+              <span>AWARDED: {collectible.awardTitle}</span>
             </div>
           )}
         </div>

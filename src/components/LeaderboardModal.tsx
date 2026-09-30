@@ -60,7 +60,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
             <div>
               <div className="flex items-center space-x-2">
                 <h2 className="text-xl font-bold tracking-tight text-slate-100 font-mono">
-                  DUNDER MIFFLIN SECOPS // OPERATIVE LEADERBOARD
+                  SECURITY OPERATIONS // LEADERBOARD
                 </h2>
                 <span className="px-2 py-0.5 text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full flex items-center space-x-1">
                   <Radio className="w-3 h-3 text-emerald-400 animate-pulse inline mr-1" />
@@ -68,7 +68,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Multi-User Branch Defense Rankings & Dundie Security Honors
+                Team rankings and security achievements
               </p>
             </div>
           </div>
@@ -111,7 +111,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
               <span className="text-emerald-400 font-bold text-sm">{currentPlayer.triageAccuracy}%</span>
             </div>
             <div className="text-right">
-              <span className="text-slate-400 block text-[10px] uppercase">Behind #1 (Dwight)</span>
+              <span className="text-slate-400 block text-[10px] uppercase">Behind #1</span>
               <span className="text-sky-400 font-bold text-sm">
                 -{Math.max(0, 4850 - (currentScore || currentPlayer.totalScore))} pts
               </span>
@@ -123,7 +123,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
         <div className="px-6 py-3 bg-slate-900/90 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center space-x-2">
             <span className="text-xs text-slate-400 font-mono">Branch:</span>
-            {['ALL', 'Scranton', 'Corporate', 'Stamford'].map((b) => (
+            {['ALL', 'Security Operations', 'Infrastructure', 'Corporate'].map((b) => (
               <button
                 key={b}
                 onClick={() => setSelectedBranch(b)}
@@ -166,7 +166,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                   <th className="py-2.5 px-3 text-right">Daily XP</th>
                   <th className="py-2.5 px-3 text-right">Score</th>
                   <th className="py-2.5 px-3 text-right">Accuracy</th>
-                  <th className="py-2.5 px-3">Dundie Honor</th>
+                  <th className="py-2.5 px-3">Achievement</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 font-mono">
@@ -293,14 +293,14 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
               ))}
             </div>
 
-            {/* Dundie Awards Info Box */}
+            {/* Team achievement info */}
             <div className="p-3 bg-amber-950/30 rounded-lg border border-amber-500/30 text-xs space-y-1">
               <div className="flex items-center space-x-1.5 text-amber-300 font-bold font-mono">
                 <Award className="w-4 h-4" />
-                <span>ANNUAL DUNDIE AWARDS</span>
+                <span>TEAM ACHIEVEMENTS</span>
               </div>
               <p className="text-[11px] text-slate-400 leading-relaxed">
-                Rank in the top 3 on the Scranton branch board by Friday to receive an exclusive custom Dundie trophy for your office desk.
+                Earn points by practicing safe security habits and helping your team.
               </p>
             </div>
           </div>
@@ -310,7 +310,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
         <div className="px-6 py-3 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
           <div className="flex items-center space-x-2">
             <Building2 className="w-4 h-4 text-sky-400" />
-            <span>Dunder Mifflin Cyber Defense Grid • Season 3 Active</span>
+            <span>CyberFloor • Security Operations</span>
           </div>
           <button
             onClick={onClose}

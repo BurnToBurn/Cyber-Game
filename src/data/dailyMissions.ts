@@ -8,10 +8,9 @@ export const DAILY_MISSION_POOL: Omit<DailyMission, 'completed' | 'claimed' | 'c
     description: 'Inspect inbox headers, verify domains, and accurately report or clear 5 emails on the terminal.',
     targetCount: 5,
     rewardXp: 150,
-    rewardSchruteBucks: 25,
-    rewardBonusText: '+150 XP & 25 Schrute Bucks',
-    icon: 'MailCheck',
-    officeQuote: '"Whenever I\'m about to do something, I think, \'Would an idiot click that link?\' And if they would, I do not click that link." — Dwight'
+    rewardTokens: 25,
+    rewardBonusText: '+150 XP & 25 bonus tokens',
+    icon: 'MailCheck'
   },
   {
     id: 'daily_secure_desks',
@@ -20,10 +19,9 @@ export const DAILY_MISSION_POOL: Omit<DailyMission, 'completed' | 'claimed' | 'c
     description: 'Enforce clean desk policy by locking unlocked workstations and shredding exposed credentials.',
     targetCount: 3,
     rewardXp: 120,
-    rewardSchruteBucks: 20,
-    rewardBonusText: '+120 XP & "Toughest Desk Auditor" Dundie',
-    icon: 'Lock',
-    officeQuote: '"Question: What is the number one cause of identity theft? Answer: Unlocked terminals and sticky notes." — Dwight'
+    rewardTokens: 20,
+    rewardBonusText: '+120 XP & 20 bonus tokens',
+    icon: 'Lock'
   },
   {
     id: 'daily_defend_vishing',
@@ -32,10 +30,9 @@ export const DAILY_MISSION_POOL: Omit<DailyMission, 'completed' | 'claimed' | 'c
     description: 'Answer ringing office phones, challenge pretexting callers, and enforce verified callback protocol.',
     targetCount: 2,
     rewardXp: 140,
-    rewardSchruteBucks: 30,
+    rewardTokens: 30,
     rewardBonusText: '+140 XP & Dual-Control Ribbon',
-    icon: 'PhoneCall',
-    officeQuote: '"Dunder Mifflin Scranton SecOps, this is Pam. No, I will not give you our server password."'
+    icon: 'PhoneCall'
   },
   {
     id: 'daily_quarantine_usb',
@@ -44,22 +41,20 @@ export const DAILY_MISSION_POOL: Omit<DailyMission, 'completed' | 'claimed' | 'c
     description: 'Recover baiting flash drives from the carpet and safely analyze them in the hardware sandbox.',
     targetCount: 2,
     rewardXp: 130,
-    rewardSchruteBucks: 20,
+    rewardTokens: 20,
     rewardBonusText: '+130 XP & Zero-Trust Pin',
-    icon: 'HardDrive',
-    officeQuote: '"If someone leaves a USB labeled \'Stanley\'s Secrets\', you do not plug it in. You destroy it." — Stanley'
+    icon: 'HardDrive'
   },
   {
     id: 'daily_coffee_boost',
     type: 'COFFEE_BOOST',
-    title: "Sip from 'World's Best Boss' Mug",
+    title: 'Get a coffee boost',
     description: 'Grab a fresh roast from the breakroom coffee station to gain hyperfocus inspection speed.',
     targetCount: 1,
     rewardXp: 50,
-    rewardSchruteBucks: 10,
+    rewardTokens: 10,
     rewardBonusText: '+50 XP & Hyperfocus Aura',
-    icon: 'Coffee',
-    officeQuote: '"I bought this mug myself at Spencer Gifts. It gives me 200% processing throughput." — Michael Scott'
+    icon: 'Coffee'
   },
   {
     id: 'daily_confer_colleagues',
@@ -68,10 +63,9 @@ export const DAILY_MISSION_POOL: Omit<DailyMission, 'completed' | 'claimed' | 'c
     description: 'Speak with Bob, Linda, Dave, Marcus, or Karen to assess active floor threat intelligence.',
     targetCount: 2,
     rewardXp: 80,
-    rewardSchruteBucks: 15,
+    rewardTokens: 15,
     rewardBonusText: '+80 XP & Morale Boost',
-    icon: 'Users',
-    officeQuote: '"Conference room, five minutes! We need to discuss perimeter firewall discipline."'
+    icon: 'Users'
   }
 ];
 
@@ -116,7 +110,19 @@ export function loadDailyMissions(): DailyMissionProgress {
     if (saved) {
       const parsed: DailyMissionProgress = JSON.parse(saved);
       if (parsed.dateKey === todayKey && parsed.missions && parsed.missions.length > 0) {
-        return parsed;
+        const missions = generateDailyMissions().map(mission => {
+          const savedMission = parsed.missions.find(entry => entry.id === mission.id);
+          if (!savedMission) return mission;
+          return {
+            ...mission,
+            currentCount: Math.max(0, Math.min(mission.targetCount, savedMission.currentCount || 0)),
+            completed: Boolean(savedMission.completed),
+            claimed: Boolean(savedMission.claimed)
+          };
+        });
+        const sanitizedProgress = { ...parsed, missions };
+        saveDailyMissions(sanitizedProgress);
+        return sanitizedProgress;
       }
     }
   } catch (e) {

@@ -73,8 +73,8 @@ export default function App() {
     activeObjectives: [],
     completedObjectives: [],
     characterSkin: 'player_alex',
-    schruteBucks: 50,
-    dundieAwards: ['🏆 Rookie SecOps Badge of Slough']
+    bonusTokens: 50,
+    awards: ['🏆 Security Operations Rookie Award']
   });
 
   // World Threat Level (0 - 100%)
@@ -97,9 +97,6 @@ export default function App() {
   // Procedural Floor Grid Map
   const [mapGrid, setMapGrid] = useState(() => generateOfficeFloor(1));
 
-  // Hub Workday Timer (5 minutes = 300s, pauses in mini-games to avoid rushing education)
-  const [workdaySeconds, setWorkdaySeconds] = useState<number>(300);
-
   // Current active scenarios & NPC
   const [activeEmails, setActiveEmails] = useState<PhishingEmail[]>(INITIAL_EMAILS);
   const [activePhoneScenario, setActivePhoneScenario] = useState<PhoneScenario>(PHONE_SCENARIOS[0]);
@@ -121,23 +118,6 @@ export default function App() {
       return () => clearInterval(timer);
     }
   }, [playerStats.coffeeBuffDuration]);
-
-  // Office Workday Clock (Only runs in HUB, pauses in mini-games)
-  useEffect(() => {
-    if (currentScreen === 'HUB' && workdaySeconds > 0) {
-      const timer = setInterval(() => {
-        setWorkdaySeconds(prev => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            setCurrentScreen('RUN_SUMMARY');
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [currentScreen, workdaySeconds]);
 
   // Synchronize player score to multi-user leaderboard
   useEffect(() => {
@@ -207,7 +187,7 @@ export default function App() {
         ...p,
         credits: p.credits + mission.rewardXp,
         xp: p.xp + mission.rewardXp,
-        schruteBucks: (p.schruteBucks || 0) + mission.rewardSchruteBucks
+        bonusTokens: (p.bonusTokens || 0) + (mission.rewardTokens || 0)
       }));
 
       // Add to multiplayer activity feed
@@ -215,10 +195,10 @@ export default function App() {
         id: `feed_${Date.now()}`,
         timestamp: 'Just now',
         username: 'You (Agent Alex)',
-        branch: 'Scranton Branch (1725 Slough Ave)',
+        branch: 'Security Operations',
         action: `Claimed daily mission: "${mission.title}"`,
         points: mission.rewardXp,
-        type: 'DUNDIE'
+        type: 'SUCCESS'
       };
       setActivityFeed(f => [newFeedItem, ...f.slice(0, 15)]);
 
@@ -239,8 +219,8 @@ export default function App() {
       ...p,
       credits: p.credits + 300,
       xp: p.xp + 300,
-      schruteBucks: (p.schruteBucks || 0) + 100,
-      dundieAwards: [...(p.dundieAwards || []), '🏆 Annual Scranton SecOps Grand Perfection Dundie']
+      bonusTokens: (p.bonusTokens || 0) + 100,
+      awards: [...(p.awards || []), '🏆 Security Operations Excellence Award']
     }));
 
     setDailyProgress(prev => {
@@ -261,7 +241,7 @@ export default function App() {
       id: `feed_hf_${Date.now()}`,
       timestamp: 'Just now',
       username: 'You (Agent Alex)',
-      branch: 'Scranton Branch (1725 Slough Ave)',
+      branch: 'Security Operations',
       action: `Exchanged high-five with ${peerName} on Floor ${playerStats.currentFloor}`,
       points: 15,
       type: 'SUCCESS'
@@ -416,30 +396,30 @@ export default function App() {
 
     const item = activeCollectible;
     const xpReward = item.rewardXp;
-    const sbReward = item.rewardSchruteBucks;
+    const tokenReward = item.rewardTokens;
 
     setPlayerStats(prev => {
       const existingProps = prev.collectedProps || [];
-      const existingDundies = prev.dundieAwards || [];
+      const existingAwards = prev.awards || [];
       
       const nextProps = existingProps.includes(item.title) 
         ? existingProps 
         : [...existingProps, item.title];
 
-      const nextDundies = (item.dundieTitle && !existingDundies.includes(item.dundieTitle))
-        ? [...existingDundies, item.dundieTitle]
-        : existingDundies;
+      const nextAwards = (item.awardTitle && !existingAwards.includes(item.awardTitle))
+        ? [...existingAwards, item.awardTitle]
+        : existingAwards;
 
-      // Instant Coffee speed boost if World's Best Boss mug
-      const coffeeBoost = item.collectibleType === 'WORLDS_BEST_BOSS_MUG' ? 35 : 0;
+      // Coffee collectibles provide a short speed boost.
+      const coffeeBoost = item.collectibleType === 'COFFEE_MUG' ? 35 : 0;
 
       return {
         ...prev,
         credits: prev.credits + xpReward,
         xp: prev.xp + xpReward,
-        schruteBucks: (prev.schruteBucks || 0) + sbReward,
+        bonusTokens: (prev.bonusTokens || 0) + tokenReward,
         collectedProps: nextProps,
-        dundieAwards: nextDundies,
+        awards: nextAwards,
         coffeeBuffDuration: Math.max(prev.coffeeBuffDuration, coffeeBoost),
         hasInspectVision: coffeeBoost > 0 ? true : prev.hasInspectVision
       };
@@ -457,15 +437,15 @@ export default function App() {
     const feedEntry: MultiplayerActivityFeedItem = {
       id: `feed_prop_${Date.now()}`,
       timestamp: 'Just now',
-      username: playerStats.characterSkin === 'player_dwight' ? 'Dwight K. Schrute' : playerStats.characterSkin === 'player_jim' ? 'Jim Halpert' : 'Agent Alex (You)',
-      branch: 'Scranton (1725 Slough)',
+      username: 'You',
+      branch: 'Security Operations',
       action: `Discovered secret prop "${item.title}"!`,
       points: xpReward,
-      type: 'DUNDIE'
+      type: 'SUCCESS'
     };
     setActivityFeed(prev => [feedEntry, ...prev.slice(0, 19)]);
 
-    setObjectiveToast(`COLLECTED: ${item.title} (+${xpReward} XP, +${sbReward} SB)`);
+    setObjectiveToast(`COLLECTED: ${item.title} (+${xpReward} XP, +${tokenReward} tokens)`);
     audio.playSuccess();
     confetti({ particleCount: 45, spread: 75, origin: { y: 0.6 } });
 
@@ -693,7 +673,6 @@ export default function App() {
     setMapGrid(generateOfficeFloor(nextFloorNumber));
     setThreatLevel(15);
     setIncidentShieldAvailable(true);
-    setWorkdaySeconds(300);
     setCurrentScreen('HUB');
   };
 
@@ -714,8 +693,8 @@ export default function App() {
       activeObjectives: [],
       completedObjectives: [],
       characterSkin: 'player_alex',
-      schruteBucks: 50,
-      dundieAwards: ['🏆 Rookie SecOps Badge of Slough']
+      bonusTokens: 50,
+      awards: ['🏆 Security Operations Rookie Award']
     });
     setThreatLevel(10);
     setMatrixScore({
@@ -730,14 +709,7 @@ export default function App() {
     setIncidents([]);
     setMapGrid(generateOfficeFloor(1));
     setIncidentShieldAvailable(true);
-    setWorkdaySeconds(300);
     setCurrentScreen('HUB');
-  };
-
-  // Fast 90-Second Demo Script Execution
-  const handleFastDemoScript = () => {
-    audio.playTerminalDing();
-    setCurrentScreen('PHISHING_TERMINAL');
   };
 
   const handleSelectSkin = (skinId: string) => {
@@ -770,7 +742,6 @@ export default function App() {
         dailyMissionsTotalCount={dailyProgress.missions.length}
         onOpenLeaderboard={() => setShowLeaderboardModal(true)}
         playerRank={playerRank}
-        workdaySeconds={workdaySeconds}
         onOpenTrophyRoom={() => setShowTrophyRoomModal(true)}
       />
 
@@ -787,32 +758,18 @@ export default function App() {
         playerStats={playerStats}
         threatLevel={threatLevel}
         onInteractEntity={handleInteractEntity}
-        onFastDemoScript={handleFastDemoScript}
         onToggleSound={handleToggleSound}
         soundEnabled={soundEnabled}
         onSelectSkin={handleSelectSkin}
-        onOpenDailyMissions={() => setShowDailyModal(true)}
-        dailyCompletedCount={completedDailyCount}
-        dailyTotalCount={dailyProgress.missions.length}
-        onOpenLeaderboard={() => setShowLeaderboardModal(true)}
         onHighFivePeer={handleHighFivePeer}
-        onOpenTrophyRoom={() => setShowTrophyRoomModal(true)}
       />
 
-      {/* High Density Bottom Status Bar */}
-      <footer className="h-10 border-t border-[#141414] bg-[#E4E3E0] px-4 md:px-8 flex items-center justify-between z-10 shrink-0 text-[10px] font-mono uppercase">
-        <div className="flex items-center gap-4 md:gap-8 opacity-70 font-bold text-slate-900">
-          <span className="hidden sm:inline">FREEFORM ROAM: [WASD / CLICK FLOOR]</span>
-          <span>INTERACT: [E / SPACE]</span>
-          <span className="hidden md:inline">DAILY: {completedDailyCount}/{dailyProgress.missions.length} • RANK: #{playerRank}</span>
-        </div>
-        <div className="flex items-center gap-3 font-bold">
-          <span className="opacity-60 text-slate-800">THREAT DEFCON:</span>
-          <span className={threatLevel >= 75 ? 'text-red-600 animate-pulse' : threatLevel >= 50 ? 'text-amber-700' : 'text-emerald-700'}>
-            {threatLevel >= 75 ? 'CRITICAL BREACH' : threatLevel >= 50 ? 'ELEVATED' : 'OPTIMAL'}
-          </span>
-          <div className={`w-2 h-2 rounded-full ${threatLevel >= 75 ? 'bg-red-600 animate-pulse' : threatLevel >= 50 ? 'bg-amber-500' : 'bg-emerald-600'}`} />
-        </div>
+      <footer className="z-10 flex shrink-0 items-center justify-center gap-2 border-t border-white/10 bg-slate-950/90 px-3 py-2 text-center text-xs text-slate-300">
+        <span className="hidden sm:inline">Move: WASD or arrow keys</span>
+        <span className="hidden sm:inline text-slate-600">·</span>
+        <span>Click a challenge to play</span>
+        <span className="hidden sm:inline text-slate-600">·</span>
+        <span className="hidden sm:inline">Walk close and press E to interact</span>
       </footer>
 
       {/* Mini-Game 1: Phishing Terminal */}
@@ -945,7 +902,7 @@ export default function App() {
         />
       )}
 
-      {/* Discovered 'The Office' Collectible Prop Discovery Modal */}
+      {/* Collectible discovery modal */}
       {activeCollectible && (
         <OfficeCollectibleModal
           collectible={activeCollectible}
@@ -957,7 +914,7 @@ export default function App() {
         />
       )}
 
-      {/* Dundie Awards & Desk Collectibles Showcase Trophy Room */}
+      {/* Awards and collectibles */}
       {showTrophyRoomModal && (
         <TrophyRoomModal
           playerStats={playerStats}
