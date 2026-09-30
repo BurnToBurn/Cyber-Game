@@ -41,23 +41,23 @@ export type TileType =
   | 'TURNSTILE' 
   | 'WHITEBOARD'
   | 'ELEVATOR'
-  | 'JELLO_STAPLER'
-  | 'DUNDIE_DISPLAY'
+  | 'DESK_STAPLER'
+  | 'AWARD_DISPLAY'
   | 'PAPER_STACK';
 
 export type OfficeCollectibleType = 
-  | 'JELLO_STAPLER' 
-  | 'BEET_CARVING' 
-  | 'DUNDIE_TROPHY' 
+  | 'DESK_STAPLER'
+  | 'DESK_PLANT'
+  | 'TEAM_TROPHY'
   | 'BOBBLEHEAD' 
   | 'CHILI_POT' 
   | 'PRETZEL_TICKET' 
-  | 'WORLDS_BEST_BOSS_MUG' 
-  | 'THREAT_LEVEL_MIDNIGHT_SCRIPT' 
-  | 'SERENITY_CANDLE' 
-  | 'SCHRUTE_BUCKS_STASH'
-  | 'PAM_WATERCOLOR'
-  | 'WUPHF_CARD';
+  | 'COFFEE_MUG'
+  | 'INCIDENT_NOTES'
+  | 'DESK_CANDLE'
+  | 'TOKEN_STASH'
+  | 'OFFICE_ART'
+  | 'ACCESS_CARD';
 
 export interface OfficeCollectibleData {
   collectibleType: OfficeCollectibleType;
@@ -67,8 +67,8 @@ export interface OfficeCollectibleData {
   character: string;
   iconEmoji: string;
   rewardXp: number;
-  rewardSchruteBucks: number;
-  dundieTitle?: string;
+  rewardTokens: number;
+  awardTitle?: string;
   sparkleColor: string;
   rarity: 'COMMON' | 'RARE' | 'LEGENDARY';
 }
@@ -83,8 +83,8 @@ export type EntityType =
   | 'PRINTER_LEAK' 
   | 'ELEVATOR_EXIT'
   | 'PEER_OPERATIVE'
-  | 'DUNDIE_TROPHY'
-  | 'JELLO_PRANK'
+  | 'TEAM_TROPHY'
+  | 'DESK_PRANK'
   | 'COLLECTIBLE_PROP';
 
 export interface OfficeEntity {
@@ -134,8 +134,8 @@ export interface PlayerStats {
   characterSkin?: string;
   activeObjectives: string[];
   completedObjectives: string[];
-  schruteBucks?: number;
-  dundieAwards?: string[];
+  bonusTokens?: number;
+  awards?: string[];
   collectedProps?: string[];
   branchName?: string;
   username?: string;
@@ -160,12 +160,11 @@ export interface DailyMission {
   currentCount: number;
   targetCount: number;
   rewardXp: number;
-  rewardSchruteBucks?: number;
+  rewardTokens?: number;
   rewardBonusText?: string;
   completed: boolean;
   claimed: boolean;
   icon: string;
-  officeQuote?: string; // The Office TV show easter egg quote
 }
 
 export interface DailyMissionProgress {
@@ -181,7 +180,7 @@ export interface LeaderboardEntry {
   rank: number;
   username: string;
   avatarSkin: string;
-  branch: string; // e.g. "Scranton Branch (1725 Slough Ave)", "Corporate HQ (NYC)", "Stamford Annex", "Utica SOC"
+  branch: string;
   department: 'SALES' | 'ACCOUNTING' | 'MANAGEMENT' | 'IT_SECOPS' | 'QUALITY_ASSURANCE';
   title: string;
   clearanceLevel: number;
@@ -207,8 +206,6 @@ export interface MultiplayerOperative {
   isMoving: boolean;
   walkFrame: number;
   statusMessage: string;
-  speechBubble?: string;
-  bubbleTimeout?: number;
   dundieAward?: string;
   color: string;
   accentColor: string;
@@ -225,7 +222,7 @@ export interface MultiplayerActivityFeedItem {
   branch: string;
   action: string;
   points: number;
-  type: 'SUCCESS' | 'ALERT' | 'DUNDIE' | 'PRANK' | 'INCIDENT';
+  type: 'SUCCESS' | 'ALERT' | 'PRANK' | 'INCIDENT';
 }
 
 export interface PhishingEmail {

@@ -3,24 +3,18 @@ import {
   MapGrid, OfficeEntity, PlayerStats, TileType, Position, MultiplayerOperative 
 } from '../types';
 import { 
-  Terminal, PhoneCall, HardDrive, Lock, Coffee, 
-  Sparkles, DoorOpen, Play, ChevronUp, ChevronDown, 
-  ChevronLeft, ChevronRight, Zap, Info, ShieldAlert, 
-  Volume2, VolumeX, Eye, Monitor,
-  Radio, User, HelpCircle, Activity, ZoomIn, ZoomOut,
-  Users, UserCheck, Award, MessageSquare, Handshake, Target
+  Terminal, PhoneCall, HardDrive, Lock, Coffee, DoorOpen,
+  Zap, Volume2, VolumeX, Award, Handshake
 } from 'lucide-react';
 import { audio } from '../utils/audio';
-import { PixelCharacter, PLAYABLE_OPERATIVES } from './PixelCharacter';
+import { PixelCharacter } from './PixelCharacter';
 import { OperativeSelectModal } from './OperativeSelectModal';
-import { INITIAL_PEER_OPERATIVES, OFFICE_PEER_SPEECH_QUOTES } from '../data/leaderboardData';
+import { INITIAL_PEER_OPERATIVES } from '../data/leaderboardData';
 import { 
   NpcAiSchedule, 
-  NpcAiState,
   createInitialNpcAiState, 
   findPath, 
-  pickRandomDestination, 
-  getNpcActivityTag 
+  pickRandomDestination
 } from '../utils/npcAi';
 
 interface OfficeHubProps {
@@ -28,16 +22,10 @@ interface OfficeHubProps {
   playerStats: PlayerStats;
   threatLevel: number;
   onInteractEntity: (entity: OfficeEntity) => void;
-  onFastDemoScript: () => void;
   onToggleSound: () => void;
   soundEnabled: boolean;
   onSelectSkin?: (skinId: string) => void;
-  onOpenDailyMissions?: () => void;
-  dailyCompletedCount?: number;
-  dailyTotalCount?: number;
-  onOpenLeaderboard?: () => void;
   onHighFivePeer?: (peerName: string) => void;
-  onOpenTrophyRoom?: () => void;
 }
 
 export const OfficeHub: React.FC<OfficeHubProps> = ({
@@ -45,16 +33,10 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
   playerStats,
   threatLevel,
   onInteractEntity,
-  onFastDemoScript,
   onToggleSound,
   soundEnabled,
   onSelectSkin,
-  onOpenDailyMissions,
-  dailyCompletedCount = 0,
-  dailyTotalCount = 6,
-  onOpenLeaderboard,
-  onHighFivePeer,
-  onOpenTrophyRoom
+  onHighFivePeer
 }) => {
   // =========================================================================
   // FREEFORM SMOOTH MOVEMENT ENGINE STATE
@@ -77,16 +59,16 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
   const [nearbyEntity, setNearbyEntity] = useState<OfficeEntity | null>(null);
   const [nearbyPeer, setNearbyPeer] = useState<MultiplayerOperative | null>(null);
   const [inspectedPeer, setInspectedPeer] = useState<MultiplayerOperative | null>(null);
+  const [tileSize, setTileSize] = useState(32);
+  const stageRef = useRef<HTMLDivElement>(null);
   
   // UI & Viewport Controls
   const [flashSiren, setFlashSiren] = useState<boolean>(false);
   const [showRosterModal, setShowRosterModal] = useState<boolean>(false);
-  const [showNpcRosterDrawer, setShowNpcRosterDrawer] = useState<boolean>(false);
   const [zoomLevel, setZoomLevel] = useState<number>(1);
-  const [crtEnabled, setCrtEnabled] = useState<boolean>(true);
   const [easterEggToast, setEasterEggToast] = useState<string | null>(null);
 
-  // Multiplayer Peer Operatives State (Dwight, Jim, Pam, Michael roaming)
+  // Other security staff roam the floor.
   const [peerOperatives, setPeerOperatives] = useState<MultiplayerOperative[]>(INITIAL_PEER_OPERATIVES);
 
   // Dynamic NPC AI Work & Wander Schedules
@@ -145,6 +127,22 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
       .map(e => createInitialNpcAiState(e.dataId!, e.id));
     setNpcSchedules(newSchedules);
   }, [mapGrid]);
+
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+
+    const resizeObserver = new ResizeObserver(([entry]) => {
+      const gap = 2;
+      const frameSpace = 32;
+      const widthFit = (entry.contentRect.width - frameSpace - (mapGrid.width - 1) * gap) / mapGrid.width;
+      const heightFit = (entry.contentRect.height - frameSpace - (mapGrid.height - 1) * gap) / mapGrid.height;
+      setTileSize(Math.max(1, Math.min(56, Math.floor(Math.min(widthFit, heightFit)))));
+    });
+
+    resizeObserver.observe(stage);
+    return () => resizeObserver.disconnect();
+  }, [mapGrid.height, mapGrid.width]);
 
   // Merge dynamic NPC positions into active entity list
   const activeEntities: OfficeEntity[] = mapGrid.entities.map(entity => {
@@ -342,7 +340,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
           let nextX = peer.pos.x;
           let nextY = peer.pos.y;
           let nextFacing = peer.facing;
-          let newSpeech = peer.speechBubble;
 
           if (shouldWander) {
             const wanderDest = pickRandomDestination();
@@ -351,15 +348,10 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
             nextFacing = nextX > peer.pos.x ? 'RIGHT' : 'LEFT';
           }
 
-          if (Math.random() < 0.2) {
-            newSpeech = OFFICE_PEER_SPEECH_QUOTES[Math.floor(Math.random() * OFFICE_PEER_SPEECH_QUOTES.length)];
-          }
-
           return {
             ...peer,
             pos: { x: nextX, y: nextY },
             facing: nextFacing,
-            speechBubble: newSpeech,
             walkFrame: (peer.walkFrame + 1) % 4
           };
         });
@@ -380,25 +372,7 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
     return 'rgba(56, 189, 248, 0.04)';
   };
 
-  // Helper for NPC Details
-  const getNpcDetails = (dataId?: string) => {
-    switch (dataId) {
-      case 'npc_bob':
-        return { emoji: '💼', name: 'Bob Miller', role: 'Commercial Wire', color: '#f59e0b', tag: 'FINANCE' };
-      case 'npc_linda':
-        return { emoji: '📋', name: 'Linda Chen', role: 'VP Compliance', color: '#ec4899', tag: 'GLBA DIR' };
-      case 'npc_dave':
-        return { emoji: '🖥️', name: 'Dave Kowalski', role: 'Core Mainframe', color: '#06b6d4', tag: 'INFRA' };
-      case 'npc_marcus':
-        return { emoji: '🛡️', name: 'Marcus Vance', role: 'SecOps SOC Lead', color: '#10b981', tag: 'SECOPS' };
-      case 'npc_karen':
-        return { emoji: '📱', name: 'Karen Sterling', role: 'OCC Risk Liaison', color: '#8b5cf6', tag: 'EXEC' };
-      default:
-        return { emoji: '👤', name: 'Colleague', role: 'Employee', color: '#38bdf8', tag: 'STAFF' };
-    }
-  };
-
-  // Easter egg triggers for Office props
+  // Small details in the room can be inspected for extra XP.
   const handlePropClick = (propName: string, message: string) => {
     audio.playClick();
     setEasterEggToast(message);
@@ -406,7 +380,7 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
   };
 
   return (
-    <div id="office-hub-viewport" className="relative flex-1 flex flex-col items-center justify-center p-2 sm:p-4 overflow-hidden select-none bg-[#090d16]">
+    <div id="office-hub-viewport" className="relative flex-1 min-h-0 flex flex-col items-center justify-center p-2 sm:p-4 overflow-hidden select-none bg-[#090d16]">
       {/* Background Animated Retro Sci-Fi Grid */}
       <div className="absolute inset-0 grid-lines pointer-events-none z-0 opacity-40" />
 
@@ -416,212 +390,57 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
         style={{ backgroundColor: getAtmosphereGlow() }}
       />
 
-      {/* CRT Scanline & Phosphor Overlay */}
-      {crtEnabled && <div className="absolute inset-0 crt-overlay z-20 pointer-events-none" />}
-
-      {/* Top Floating Arcade Control HUD */}
-      <div className="absolute top-3 left-3 right-3 z-30 flex items-center justify-between pointer-events-auto">
-        {/* Left Side: Floor Tag & Freeform Movement Legend */}
-        <div className="flex items-center gap-2">
-          <div className="bg-[#0f172a] text-white px-3 py-1.5 border-2 border-[#334155] shadow-lg flex items-center gap-2.5 font-arcade text-xs">
-            <span className="w-2 h-2 rounded-full bg-[#38bdf8] animate-pulse" />
-            <span className="text-[#38bdf8] font-bold">FLOOR {playerStats.currentFloor}</span>
-            <span className="text-white/40 hidden md:inline">|</span>
-            <span className="text-amber-300 font-pixel text-[9px] hidden sm:inline">
-              FREEFORM ROAMING ACTIVE
-            </span>
-          </div>
-
-          {/* Colleague Schedule Drawer Toggle */}
-          <button
-            onClick={() => setShowNpcRosterDrawer(prev => !prev)}
-            className="flex items-center gap-1.5 bg-[#0f172a] hover:bg-[#1e293b] text-slate-200 px-2.5 py-1.5 border-2 border-[#334155] font-pixel text-[9px] transition-all cursor-pointer shadow"
-            title="Toggle Live Colleague Schedules"
-          >
-            <Users className="w-3 h-3 text-[#38bdf8]" />
-            <span className="hidden sm:inline">OPERATIVES:</span>
-            <span className="text-emerald-400 font-bold">{peerOperatives.length + npcSchedules.length} LIVE</span>
-          </button>
-
-          <div className="hidden lg:flex items-center gap-1.5 bg-[#0b0f19]/90 px-3 py-1.5 border border-white/10 text-[11px] font-tech text-slate-300 shadow">
-            <span className="text-[#38bdf8] font-bold">[WASD / Click Floor]</span> Free Move
-            <span className="text-slate-500">•</span>
-            <span className="text-emerald-400 font-bold">[E / Space]</span> Interact
-          </div>
+      <div className="absolute left-3 right-3 top-3 z-30 flex items-center justify-between gap-3 pointer-events-none">
+        <div className="rounded-xl border border-white/10 bg-slate-950/85 px-3 py-2 shadow-lg">
+          <div className="text-sm font-semibold text-white">Explore the floor</div>
+          <div className="text-xs text-slate-300">Click a challenge to start</div>
         </div>
-
-        {/* Right Side: Navigation & Audio Controls */}
-        <div className="flex items-center gap-2">
-          {/* Operative Roster Switcher */}
-          <button
-            id="btn-open-roster"
-            onClick={() => {
-              audio.playClick();
-              setShowRosterModal(true);
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0f172a] hover:bg-[#1e293b] text-slate-200 hover:text-white font-pixel text-[9px] uppercase tracking-wider border-2 border-[#38bdf8] shadow-md transition-all cursor-pointer"
-            title="Switch Active SecOps Specialist"
-          >
-            <Users className="w-3.5 h-3.5 text-[#38bdf8]" />
-            <span className="hidden sm:inline">OPERATIVE:</span>
-            <span className="text-[#38bdf8]">
-              {PLAYABLE_OPERATIVES.find(op => op.id === (playerStats.characterSkin || 'player_alex'))?.callsign || 'AGENT'}
-            </span>
-          </button>
-
-          {/* Trophy Case & Dundie Awards Button */}
-          <button
-            id="btn-hub-trophy-case"
-            onClick={() => {
-              audio.playClick();
-              if (onOpenTrophyRoom) onOpenTrophyRoom();
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0f172a] hover:bg-[#1e293b] text-amber-300 hover:text-amber-200 font-pixel text-[9px] uppercase tracking-wider border-2 border-amber-500/70 shadow-md transition-all cursor-pointer"
-            title="View Discovered 'The Office' Desk Collectibles & Dundies"
-          >
-            <span className="text-xs">🏆</span>
-            <span className="hidden sm:inline">PROPS:</span>
-            <span className="text-yellow-400 font-bold">{(playerStats.collectedProps?.length || 0) + (playerStats.dundieAwards?.length || 0)}</span>
-          </button>
-
-          {/* Zoom Controls */}
-          <div className="hidden sm:flex items-center bg-[#0f172a] border border-[#334155] p-0.5">
+        <div className="flex items-center gap-2 pointer-events-auto">
+          <div className="hidden rounded-lg border border-white/10 bg-slate-950/85 px-3 py-2 text-xs text-slate-300 md:block">
+            Move with <kbd className="rounded bg-slate-700 px-1.5 py-0.5 text-white">WASD</kbd> or arrows
+          </div>
+          <div className="flex items-center rounded-lg border border-white/10 bg-slate-950/85 p-1">
             <button
               onClick={() => setZoomLevel(prev => Math.min(1.3, prev + 0.1))}
-              className="p-1 hover:bg-[#1e293b] text-slate-300 hover:text-white transition-colors cursor-pointer"
-              title="Zoom In"
+              className="rounded px-2 py-1 text-sm text-slate-200 hover:bg-white/10"
+              aria-label="Zoom in"
             >
-              <ZoomIn className="w-3.5 h-3.5" />
+              +
             </button>
             <button
               onClick={() => setZoomLevel(prev => Math.max(0.75, prev - 0.1))}
-              className="p-1 hover:bg-[#1e293b] text-slate-300 hover:text-white transition-colors cursor-pointer"
-              title="Zoom Out"
+              className="rounded px-2 py-1 text-sm text-slate-200 hover:bg-white/10"
+              aria-label="Zoom out"
             >
-              <ZoomOut className="w-3.5 h-3.5" />
+              −
             </button>
           </div>
-
-          {/* CRT Filter Toggle */}
-          <button
-            onClick={() => setCrtEnabled(!crtEnabled)}
-            className={`p-1.5 border text-xs transition-colors cursor-pointer ${
-              crtEnabled ? 'bg-[#0f172a] border-[#38bdf8] text-[#38bdf8]' : 'bg-[#0f172a] border-[#334155] text-slate-500'
-            }`}
-            title="Toggle CRT Scanlines"
-          >
-            <Monitor className="w-4 h-4" />
-          </button>
-
-          {/* 90-Second Demo Button */}
-          <button
-            id="btn-fast-demo"
-            onClick={onFastDemoScript}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#dc2626] hover:bg-[#b91c1c] text-white font-pixel text-[8px] sm:text-[9px] uppercase tracking-widest border-2 border-[#f87171] shadow-lg transition-all cursor-pointer active:translate-y-0.5"
-            title="Auto-trigger Demo Flow"
-          >
-            <Play className="w-3 h-3 fill-current text-white" />
-            <span className="hidden sm:inline">DEMO</span>
-          </button>
-
-          {/* Sound Toggle */}
           <button
             onClick={onToggleSound}
-            className="p-1.5 bg-[#0f172a] border-2 border-[#334155] text-slate-300 hover:text-white hover:border-[#38bdf8] transition-colors cursor-pointer"
-            title="Toggle Sound FX"
+            className="rounded-lg border border-white/10 bg-slate-950/85 p-2 text-slate-200 hover:bg-white/10"
+            aria-label={soundEnabled ? 'Turn sound off' : 'Turn sound on'}
           >
-            {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4 opacity-50" />}
+            {soundEnabled ? <Volume2 className="h-4 w-4 text-emerald-400" /> : <VolumeX className="h-4 w-4 text-slate-400" />}
           </button>
         </div>
       </div>
 
-      {/* Floating Colleague Schedule Drawer */}
-      {showNpcRosterDrawer && (
-        <div className="absolute top-14 left-3 z-40 bg-[#0f172a]/95 border-2 border-[#38bdf8] p-3 shadow-2xl max-w-sm rounded-sm backdrop-blur-sm animate-fadeIn">
-          <div className="flex items-center justify-between pb-2 border-b border-[#334155] mb-2">
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-[#38bdf8]" />
-              <span className="font-arcade text-xs text-white uppercase tracking-wider">Live Building Floor Sync</span>
-            </div>
-            <button 
-              onClick={() => setShowNpcRosterDrawer(false)}
-              className="text-slate-400 hover:text-white font-mono text-xs cursor-pointer"
-            >
-              ✕
-            </button>
-          </div>
-
-          <div className="space-y-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
-            {/* Live Peer Operatives (Dwight, Jim, Pam, Michael) */}
-            <div className="text-[10px] font-mono text-amber-400 font-bold uppercase tracking-wider">
-              Scranton Branch Operatives (Active)
-            </div>
-            {peerOperatives.map(peer => (
-              <div key={peer.id} className="bg-[#1e293b]/70 border border-amber-500/30 p-2 rounded flex flex-col gap-1 text-xs">
-                <div className="flex items-center justify-between">
-                  <div className="font-bold text-white flex items-center gap-1.5">
-                    <span>👑</span>
-                    <span>{peer.username}</span>
-                  </div>
-                  <span className="font-pixel text-[7px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                    LVL {peer.clearanceLevel}
-                  </span>
-                </div>
-                <div className="text-[11px] text-slate-300 italic font-mono pl-4">
-                  "{peer.speechBubble || peer.statusMessage}"
-                </div>
-                <div className="text-[9px] text-slate-400 flex items-center justify-between pl-4 pt-0.5 border-t border-slate-700/50">
-                  <span>{peer.role}</span>
-                  <span className="text-amber-300">{peer.score} pts</span>
-                </div>
-              </div>
-            ))}
-
-            <div className="text-[10px] font-mono text-sky-400 font-bold uppercase tracking-wider pt-2">
-              Department Staff Schedules
-            </div>
-            {npcSchedules.map(npc => {
-              const tagInfo = getNpcActivityTag(npc.state, npc.targetDestination?.type);
-              const npcMeta = getNpcDetails(npc.dataId);
-              return (
-                <div key={npc.npcId} className="bg-[#1e293b]/60 border border-[#334155] p-2 rounded flex flex-col gap-1 text-xs">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 font-bold text-white">
-                      <span>{npcMeta.emoji}</span>
-                      <span>{npc.name}</span>
-                    </div>
-                    <span 
-                      className="font-pixel text-[7px] px-1.5 py-0.5 rounded text-white"
-                      style={{ backgroundColor: tagInfo.color }}
-                    >
-                      {tagInfo.icon} {tagInfo.tag}
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-slate-300 italic font-mono pl-5">
-                    "{npc.activityMessage}"
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       {/* Main Ortho 2D Stage Canvas */}
       <div 
-        className="relative flex-1 w-full max-w-6xl max-h-[82vh] flex items-center justify-center overflow-hidden mt-6 sm:mt-8"
-        style={{ transform: `scale(${zoomLevel})` }}
+        ref={stageRef}
+        className="relative mt-14 flex-1 min-h-0 w-full max-w-6xl flex items-center justify-center overflow-hidden sm:mt-16"
       >
         {/* Ortho 2D Stage Frame */}
         <div
           className="relative transition-all duration-300 ease-out"
-          style={{ transformOrigin: 'center center' }}
+          style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'center center' }}
         >
           {/* Office Floor Tile Grid */}
           <div
             className="grid gap-[2px] bg-[#0c101d] p-3 border-2 border-[#1e293b] rounded-sm relative shadow-2xl"
             style={{
-              gridTemplateColumns: `repeat(${mapGrid.width}, minmax(0, 1fr))`
+              gridTemplateColumns: `repeat(${mapGrid.width}, ${tileSize}px)`,
+              gridTemplateRows: `repeat(${mapGrid.height}, ${tileSize}px)`
             }}
           >
             {mapGrid.tiles.map((row, y) =>
@@ -635,7 +454,7 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                         audio.playClick();
                       }
                     }}
-                    className={`w-9 h-9 sm:w-11 sm:h-11 md:w-13 md:h-13 lg:w-14 lg:h-14 flex items-center justify-center relative cursor-pointer select-none transition-all duration-150 ${
+                    className={`flex items-center justify-center relative cursor-pointer select-none transition-all duration-150 ${
                       tile === 'WALL'
                         ? 'bg-[#080d18] border border-[#1e293b]'
                         : tile === 'CARPET'
@@ -647,6 +466,8 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                         : 'bg-[#101927] hover:bg-[#18263a] border border-[#1e293b]/40'
                     }`}
                     style={{
+                      width: tileSize,
+                      height: tileSize,
                       zIndex: 1
                     }}
                   >
@@ -679,47 +500,45 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                       </div>
                     )}
 
-                    {/* THE OFFICE EASTER EGG: Jell-O Stapler Prank */}
-                    {tile === 'JELLO_STAPLER' && (
+                    {/* Desk stapler */}
+                    {tile === 'DESK_STAPLER' && (
                       <div 
                         onClick={(e) => {
                           e.stopPropagation();
-                          handlePropClick('Jell-O Stapler', 'Dwight: "DAMMIT JIM! He put my stapler in Jell-O again!" (+10 XP)');
+                          handlePropClick('Stapler', 'A stapler in the wrong drawer. (+10 XP)');
                         }}
                         className="flex flex-col items-center justify-center cursor-pointer group"
-                        title="Jim's Stapler in Jell-O Prank"
+                        title="Inspect stapler"
                       >
                         <div className="w-7 h-7 bg-amber-400/80 border-2 border-amber-300 rounded-lg flex items-center justify-center shadow-[0_0_10px_#f59e0b] group-hover:scale-110 transition-transform">
-                          <span className="text-xs">🍮</span>
+                          <span className="text-xs">📎</span>
                         </div>
-                        <span className="text-[6px] font-pixel text-amber-300 uppercase">JELL-O</span>
                       </div>
                     )}
 
-                    {/* THE OFFICE EASTER EGG: Dundie Trophy Display */}
-                    {tile === 'DUNDIE_DISPLAY' && (
+                    {/* Security award display */}
+                    {tile === 'AWARD_DISPLAY' && (
                       <div 
                         onClick={(e) => {
                           e.stopPropagation();
-                          handlePropClick('Dundie Trophy Display', 'Michael: "The Dundies are about celebrating the best in all of us!" (+15 XP)');
+                          handlePropClick('Security award', 'A reminder of the team’s best work. (+15 XP)');
                         }}
                         className="flex flex-col items-center justify-center cursor-pointer group animate-bob"
-                        title="Dundie Awards Showcase"
+                        title="Inspect security awards"
                       >
                         <div className="w-7 h-7 bg-gradient-to-t from-amber-600 to-yellow-300 border-2 border-yellow-200 rounded-sm flex items-center justify-center shadow-[0_0_12px_#fbbf24] group-hover:scale-115 transition-transform">
                           <Award className="w-4 h-4 text-slate-950" />
                         </div>
-                        <span className="text-[6px] font-pixel text-yellow-300">DUNDIES</span>
                       </div>
                     )}
 
-                    {/* THE OFFICE: Dunder Mifflin Paper Stacks */}
+                    {/* Paper stacks */}
                     {tile === 'PAPER_STACK' && (
                       <div 
                         className="w-[85%] h-[85%] bg-slate-100 border-2 border-slate-400 rounded-sm flex flex-col items-center justify-center p-0.5 shadow-md"
                       >
                         <div className="w-5 h-2 bg-blue-600 text-[5px] text-white font-bold flex items-center justify-center">
-                          DM 24LB
+                          FILES
                         </div>
                       </div>
                     )}
@@ -761,7 +580,7 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                       </div>
                     )}
 
-                    {/* COFFEE STATION (World's Best Boss Mug) */}
+                    {/* Coffee station */}
                     {tile === 'COFFEE_STATION' && (
                       <div 
                         className="flex flex-col items-center justify-center relative"
@@ -858,9 +677,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                       <div className="w-8 h-8 bg-[#0284c7] border-2 border-[#38bdf8] rounded-sm flex items-center justify-center text-white shadow-[0_0_14px_#0284c7]">
                         <Terminal className="w-4 h-4 text-white" />
                       </div>
-                      <span className="absolute -top-4 font-pixel text-[7px] bg-[#0284c7] text-white px-1 border border-white whitespace-nowrap">
-                        INBOX
-                      </span>
                     </div>
                   )}
 
@@ -870,9 +686,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                       <div className="w-8 h-8 bg-[#d97706] border-2 border-[#fbbf24] rounded-sm flex items-center justify-center text-white shadow-[0_0_14px_#d97706] animate-pulse">
                         <PhoneCall className="w-4 h-4 text-white" />
                       </div>
-                      <span className="absolute -top-4 font-pixel text-[7px] bg-[#d97706] text-white px-1 border border-white whitespace-nowrap">
-                        VOIP
-                      </span>
                     </div>
                   )}
 
@@ -882,9 +695,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                       <div className="w-7 h-7 bg-[#4f46e5] border-2 border-[#818cf8] rounded-sm flex items-center justify-center text-white shadow-[0_0_12px_#4f46e5]">
                         <HardDrive className="w-3.5 h-3.5 text-white" />
                       </div>
-                      <span className="absolute -top-4 font-pixel text-[7px] bg-[#4f46e5] text-white px-1 border border-white whitespace-nowrap">
-                        USB
-                      </span>
                     </div>
                   )}
 
@@ -894,9 +704,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                       <div className="w-7 h-7 bg-[#dc2626] border-2 border-[#f87171] rounded-sm flex items-center justify-center text-white shadow-[0_0_12px_#dc2626]">
                         <Lock className="w-3.5 h-3.5 text-white" />
                       </div>
-                      <span className="absolute -top-4 font-pixel text-[7px] bg-[#dc2626] text-white px-1 border border-white whitespace-nowrap">
-                        LOCK
-                      </span>
                     </div>
                   )}
 
@@ -909,32 +716,21 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                     </div>
                   )}
 
-                  {/* NPC COWORKERS */}
+                  {/* Coworkers */}
                   {entity.type === 'NPC_COWORKER' && (() => {
-                    const npcMeta = getNpcDetails(entity.dataId);
                     const npcSchedule = npcSchedules.find(n => n.dataId === entity.dataId);
                     const isPanicked = threatLevel >= 75;
-                    const tagInfo = npcSchedule ? getNpcActivityTag(npcSchedule.state, npcSchedule.targetDestination?.type) : { tag: npcMeta.tag, icon: '👤', color: npcMeta.color };
 
                     return (
-                      <div className="relative flex flex-col items-center group">
-                        <div className={`transition-transform duration-150 group-hover:scale-115 ${npcSchedule?.isMoving ? 'scale-105' : 'animate-bob'}`}>
-                          <PixelCharacter 
-                            id={entity.dataId || 'npc_bob'}
-                            direction={npcSchedule?.facing || 'DOWN'}
-                            size="md"
-                            isMoving={npcSchedule?.isMoving || false}
-                            walkFrame={npcSchedule?.walkFrame || 0}
-                            mood={isPanicked ? 'PANICKED' : 'CALM'}
-                          />
-                        </div>
-                        <div 
-                          className="absolute -top-6 font-pixel text-[7px] px-1.5 py-0.5 rounded-[1px] border border-white text-white whitespace-nowrap shadow-md flex items-center gap-1"
-                          style={{ backgroundColor: tagInfo.color }}
-                        >
-                          <span>{tagInfo.icon}</span>
-                          <span>{tagInfo.tag}</span>
-                        </div>
+                      <div className="relative flex items-center justify-center">
+                        <PixelCharacter
+                          id={entity.dataId || 'npc_bob'}
+                          direction={npcSchedule?.facing || 'DOWN'}
+                          size="md"
+                          isMoving={npcSchedule?.isMoving || false}
+                          walkFrame={npcSchedule?.walkFrame || 0}
+                          mood={isPanicked ? 'PANICKED' : 'CALM'}
+                        />
                       </div>
                     );
                   })()}
@@ -945,19 +741,16 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                       <div className="w-8 h-8 bg-[#059669] border-2 border-[#34d399] rounded-sm flex items-center justify-center text-white shadow-[0_0_14px_#059669]">
                         <DoorOpen className="w-4 h-4 text-white" />
                       </div>
-                      <span className="absolute -top-4 font-pixel text-[7px] bg-[#059669] text-white px-1 border border-white whitespace-nowrap">
-                        EXIT
-                      </span>
                     </div>
                   )}
 
-                  {/* PROCEDURAL 'THE OFFICE' DESK COLLECTIBLES (Jell-O Staplers, Beet Carvings, Dundies, Bobbleheads) */}
+                  {/* Discoverable security collectibles */}
                   {entity.type === 'COLLECTIBLE_PROP' && entity.collectible && entity.status === 'ACTIVE' && (
                     <div 
                       className="relative flex flex-col items-center group cursor-pointer animate-bob"
                       title={`${entity.collectible.title} (${entity.collectible.rarity})`}
                     >
-                      {/* Floating Animated Prop Badge with glow and bounce */}
+                      {/* Collectible marker */}
                       <div 
                         className="relative flex items-center justify-center rounded-lg p-1.5 transition-all group-hover:scale-125 duration-200"
                         style={{
@@ -972,15 +765,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                           style={{ backgroundColor: entity.collectible.sparkleColor }}
                         />
                       </div>
-                      <span 
-                        className="absolute -top-4 font-pixel text-[6px] px-1 py-0.2 rounded border text-slate-950 font-bold whitespace-nowrap shadow-md"
-                        style={{
-                          backgroundColor: entity.collectible.sparkleColor,
-                          borderColor: '#ffffff'
-                        }}
-                      >
-                        {entity.collectible.title.split(' ')[0]}
-                      </span>
                     </div>
                   )}
                 </div>
@@ -988,7 +772,7 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
             })}
 
             {/* ============================================================= */}
-            {/* MULTIPLAYER PEER OPERATIVES (Dwight, Jim, Pam, Michael) */}
+            {/* Roaming security staff */}
             {/* ============================================================= */}
             {peerOperatives.map(peer => {
               const isNearby = nearbyPeer?.id === peer.id;
@@ -1012,14 +796,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                     <div className="absolute -inset-2 rounded-full border-2 border-sky-400 animate-pulseGlow shadow-[0_0_10px_#38bdf8]" />
                   )}
 
-                  {/* Speech Bubble */}
-                  {peer.speechBubble && (
-                    <div className="absolute -top-10 bg-slate-900 text-amber-300 font-pixel text-[7px] px-2 py-0.5 rounded border border-amber-500/50 shadow-lg whitespace-nowrap animate-bounce flex items-center gap-1">
-                      <MessageSquare className="w-2.5 h-2.5 text-amber-400" />
-                      <span>{peer.speechBubble}</span>
-                    </div>
-                  )}
-
                   <div className="relative hover:scale-110 transition-transform">
                     <PixelCharacter
                       id={peer.avatarSkin}
@@ -1028,10 +804,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                       isMoving={peer.isMoving}
                       walkFrame={peer.walkFrame}
                     />
-                    {/* Operative Name Label */}
-                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-slate-950 border border-slate-700 text-slate-200 font-pixel text-[6px] px-1 py-0.2 rounded whitespace-nowrap shadow">
-                      {peer.username.split('_')[0]} (LVL {peer.clearanceLevel})
-                    </div>
                   </div>
                 </div>
               );
@@ -1054,7 +826,7 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                 <div className="absolute inset-0 rounded-full border-2 border-amber-300 animate-ping opacity-70" />
               )}
 
-              {/* Freeform Operative Character Sprite */}
+              {/* Player character */}
               <div className={`relative transition-transform duration-100 ${isMoving ? 'scale-105' : 'animate-bob'}`}>
                 <PixelCharacter
                   id={playerStats.characterSkin || 'player_alex'}
@@ -1063,9 +835,6 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
                   isMoving={isMoving}
                   walkFrame={walkFrame}
                 />
-                <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#0284c7] border border-white text-white font-pixel text-[6px] px-1 py-0.2 rounded-[1px] whitespace-nowrap shadow">
-                  {PLAYABLE_OPERATIVES.find(op => op.id === (playerStats.characterSkin || 'player_alex'))?.callsign || 'YOU'}
-                </div>
               </div>
             </div>
           </div>
@@ -1079,25 +848,25 @@ export const OfficeHub: React.FC<OfficeHubProps> = ({
         </div>
       )}
 
-      {/* Proximity Interaction Prompt Toast */}
+      {/* Nearby interaction prompt */}
       {nearbyEntity && (
-        <div className="absolute bottom-14 sm:bottom-18 z-40 animate-bounce">
+        <div className="absolute bottom-4 z-40">
           <button
             id="btn-interact-prompt"
             onClick={() => {
               audio.playClick();
               onInteractEntity(nearbyEntity);
             }}
-            className="flex items-center gap-3 px-6 py-3 bg-[#0f172a] hover:bg-[#1e293b] text-white font-arcade text-xs sm:text-sm font-bold uppercase tracking-wider shadow-2xl border-4 border-[#38bdf8] rounded-sm cursor-pointer active:translate-y-1"
+            className="flex items-center gap-3 rounded-xl border border-sky-300/40 bg-slate-950/95 px-5 py-3 text-left text-white shadow-2xl transition hover:bg-slate-800 active:scale-[0.98]"
           >
-            <div className="w-7 h-7 bg-[#0284c7] border border-white flex items-center justify-center text-white">
-              <Zap className="w-4 h-4 text-amber-300" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-500 text-white">
+              <Zap className="h-4 w-4" />
             </div>
             <div className="text-left">
-              <div className="text-[9px] font-pixel text-[#38bdf8]">PRESS [E] OR [SPACE] TO ENGAGE</div>
-              <div className="text-white text-xs sm:text-sm font-bold tracking-wide">
+              <div className="text-sm font-semibold">
                 {nearbyEntity.name}
               </div>
+              <div className="text-xs text-slate-300">Click or press E to interact</div>
             </div>
           </button>
         </div>

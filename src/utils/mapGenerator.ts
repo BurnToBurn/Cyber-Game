@@ -3,10 +3,10 @@ import { generateRandomOfficeCollectibles } from '../data/officeCollectibles';
 
 export function getFloorTitle(floorNumber: number): string {
   const titles = [
-    'Floor 1: Dunder Mifflin Scranton Branch (1725 Slough Ave • Sales & Reception)',
+    'Floor 1: Security Operations Center',
     'Floor 2: Commercial Treasury & Accounting Floor (Fedwire & Ledger Vault)',
-    'Floor 3: Scranton Server Annex & HSM Cryptographic Vault (Air-Gapped)',
-    'Floor 4: Regional SOC & "Threat Level Midnight" Cyber Defense Center',
+    'Floor 3: Server & Cryptographic Security',
+    'Floor 4: Cyber Defense Center',
     'Floor 5: Corporate Boardroom & Executive CISO Suite (NYC 6th Floor)'
   ];
   return titles[Math.min(titles.length - 1, floorNumber - 1)] || `Floor ${floorNumber}: Advanced Cyber Defense Enclave`;
@@ -123,10 +123,10 @@ export function generateOfficeFloor(floorNumber: number): MapGrid {
   // High-Speed Bank Printer in hallway
   tiles[6][14] = 'PRINTER';
 
-  // The Office Special Prop Tiles
-  tiles[2][10] = 'JELLO_STAPLER'; // Jim's classic prank stapler
-  tiles[11][16] = 'DUNDIE_DISPLAY'; // Dundie trophy collection
-  tiles[1][19] = 'PAPER_STACK'; // Dunder Mifflin 24lb bond paper
+  // Workplace detail tiles
+  tiles[2][10] = 'DESK_STAPLER'; // Desk stapler
+  tiles[11][16] = 'AWARD_DISPLAY'; // Team award display
+  tiles[1][19] = 'PAPER_STACK'; // Paper stack
   tiles[12][6] = 'PAPER_STACK';
 
   // Elevator at the far right
@@ -280,7 +280,7 @@ export function generateOfficeFloor(floorNumber: number): MapGrid {
     dataId: 'npc_karen'
   });
 
-  // 9. Procedurally Placed Randomized 'The Office' Desk Collectibles
+  // 9. Randomized workplace collectibles
   // Gather all desk locations and open floor/carpet spaces
   const deskLocations: { x: number; y: number }[] = [];
   const openTileLocations: { x: number; y: number }[] = [];
@@ -304,7 +304,7 @@ export function generateOfficeFloor(floorNumber: number): MapGrid {
     }
   }
 
-  // Generate 3 to 5 randomized collectibles (Staplers in Jell-O, Beet Carvings, Dundie Trophies, etc.)
+  // Generate a few randomized workplace collectibles.
   const officeCollectibles = generateRandomOfficeCollectibles(
     floorNumber,
     deskLocations,

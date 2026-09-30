@@ -80,7 +80,7 @@ export const DailyMissionsModal: React.FC<DailyMissionsModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Authorized 24-Hour Security Directives • Dunder Mifflin Scranton Branch
+                Daily security challenges
               </p>
             </div>
           </div>
@@ -105,7 +105,7 @@ export const DailyMissionsModal: React.FC<DailyMissionsModalProps> = ({
           </div>
         </div>
 
-        {/* Daily Progress Banner & Dundie Bonus */}
+        {/* Daily progress and completion bonus */}
         <div className="p-6 bg-slate-950/60 border-b border-slate-800 space-y-4">
           <div className="flex items-center justify-between text-sm font-mono">
             <div className="flex items-center space-x-2">
@@ -123,7 +123,7 @@ export const DailyMissionsModal: React.FC<DailyMissionsModalProps> = ({
             />
           </div>
 
-          {/* Grand Dundie Bonus Card */}
+          {/* Completion bonus */}
           <div className={`p-3.5 rounded-lg border flex items-center justify-between transition-all ${
             allMissionsCompleted 
               ? 'bg-amber-950/40 border-amber-400/50 shadow-lg shadow-amber-950/50' 
@@ -133,9 +133,9 @@ export const DailyMissionsModal: React.FC<DailyMissionsModalProps> = ({
               <div className="text-2xl">🏆</div>
               <div>
                 <div className="text-sm font-bold text-amber-300 flex items-center space-x-1.5">
-                  <span>Grand Daily Dundie Package</span>
+                  <span>Daily completion bonus</span>
                   <span className="text-xs bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/30">
-                    +300 XP & 50 Schrute Bucks
+                    +300 XP & 100 bonus tokens
                   </span>
                 </div>
                 <p className="text-xs text-slate-400">
@@ -157,7 +157,7 @@ export const DailyMissionsModal: React.FC<DailyMissionsModalProps> = ({
                   id="claim-grand-dundie-btn"
                 >
                   <Sparkles className="w-4 h-4 text-slate-950" />
-                  <span>Claim Dundie Bonus!</span>
+                  <span>Claim bonus</span>
                 </button>
               ) : (
                 <span className="text-xs font-mono text-slate-500">
@@ -203,12 +203,6 @@ export const DailyMissionsModal: React.FC<DailyMissionsModalProps> = ({
                       </div>
                       <p className="text-xs text-slate-400 leading-relaxed">{mission.description}</p>
                       
-                      {mission.officeQuote && (
-                        <p className="text-[11px] italic text-amber-400/80 font-serif border-l-2 border-amber-500/40 pl-2 py-0.5">
-                          {mission.officeQuote}
-                        </p>
-                      )}
-
                       {/* Progress Bar within card */}
                       <div className="pt-2 space-y-1">
                         <div className="flex justify-between text-[11px] font-mono text-slate-400">
@@ -235,9 +229,9 @@ export const DailyMissionsModal: React.FC<DailyMissionsModalProps> = ({
                         <Coins className="w-3.5 h-3.5 text-amber-400" />
                         <span>+{mission.rewardXp} XP</span>
                       </div>
-                      {mission.rewardSchruteBucks && (
+                      {mission.rewardTokens && (
                         <span className="text-[10px] font-mono text-emerald-400 block">
-                          +{mission.rewardSchruteBucks} Schrute Bucks
+                          +{mission.rewardTokens} bonus tokens
                         </span>
                       )}
                     </div>
@@ -281,7 +275,7 @@ export const DailyMissionsModal: React.FC<DailyMissionsModalProps> = ({
             className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold transition-colors"
             id="close-daily-missions-footer-btn"
           >
-            Back to Office Floor
+            Back to floor
           </button>
         </div>
       </div>

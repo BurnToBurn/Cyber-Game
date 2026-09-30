@@ -13,7 +13,7 @@ export const TrophyRoomModal: React.FC<TrophyRoomModalProps> = ({
   onClose
 }) => {
   const collectedList = playerStats.collectedProps || [];
-  const dundieList = playerStats.dundieAwards || [];
+  const awardList = playerStats.awards || [];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn select-none">
@@ -26,10 +26,10 @@ export const TrophyRoomModal: React.FC<TrophyRoomModalProps> = ({
             </div>
             <div>
               <h2 className="text-base font-bold font-tech text-amber-300 uppercase tracking-wider flex items-center gap-2">
-                Dunder Mifflin Trophy & Collectibles Case
+                Awards & Collectibles
               </h2>
               <p className="text-[10px] text-slate-400 font-pixel">
-                DISCOVERED: {collectedList.length} / {OFFICE_COLLECTIBLE_CATALOG.length} DESK TREASURES • {dundieList.length} DUNDIE AWARDS
+                FOUND: {collectedList.length} / {OFFICE_COLLECTIBLE_CATALOG.length} • {awardList.length} AWARDS
               </p>
             </div>
           </div>
@@ -45,8 +45,8 @@ export const TrophyRoomModal: React.FC<TrophyRoomModalProps> = ({
         <div className="bg-[#030712] border-b border-[#1e293b] p-3 px-6 flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <Coins className="w-4 h-4 text-emerald-400" />
-            <span className="text-slate-400">Schrute Bucks Balance:</span>
-            <span className="font-bold text-emerald-300 font-mono text-sm">{playerStats.schruteBucks || 0} SB</span>
+            <span className="text-slate-400">Bonus tokens:</span>
+            <span className="font-bold text-emerald-300 font-mono text-sm">{playerStats.bonusTokens || 0}</span>
           </div>
           <div className="flex items-center gap-2">
             <Zap className="w-4 h-4 text-sky-400" />
@@ -57,14 +57,14 @@ export const TrophyRoomModal: React.FC<TrophyRoomModalProps> = ({
 
         {/* Content Body: Scrollable Grid */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar">
-          {/* Section 1: Dundie Awards Hall of Fame */}
+          {/* Awards */}
           <div>
             <div className="flex items-center gap-2 text-xs font-pixel text-yellow-400 uppercase tracking-wider mb-3">
               <Award className="w-4 h-4 text-yellow-400" />
-              <span>Dundie Awards Showcase ({dundieList.length})</span>
+              <span>Awards ({awardList.length})</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {dundieList.map((dundie, idx) => (
+              {awardList.map((award, idx) => (
                 <div 
                   key={idx}
                   className="bg-gradient-to-r from-amber-950/40 to-slate-900 border border-yellow-500/40 p-2.5 rounded-sm flex items-center gap-3 shadow-md"
@@ -73,19 +73,19 @@ export const TrophyRoomModal: React.FC<TrophyRoomModalProps> = ({
                     🏆
                   </div>
                   <div className="min-w-0">
-                    <div className="text-xs font-bold text-yellow-200 truncate">{dundie}</div>
-                    <div className="text-[9px] text-slate-400">Scranton Branch Official Honor</div>
+                    <div className="text-xs font-bold text-yellow-200 truncate">{award}</div>
+                    <div className="text-[9px] text-slate-400">Team recognition</div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Section 2: Catalog of 'The Office' Desk Items */}
+          {/* Collectibles */}
           <div>
             <div className="flex items-center gap-2 text-xs font-pixel text-amber-400 uppercase tracking-wider mb-3">
               <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>Procedural Office Desk Collectibles</span>
+              <span>Workplace collectibles</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {OFFICE_COLLECTIBLE_CATALOG.map((item) => {
@@ -115,7 +115,7 @@ export const TrophyRoomModal: React.FC<TrophyRoomModalProps> = ({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-1">
                           <h4 className={`text-xs font-bold truncate ${isCollected ? 'text-slate-100' : 'text-slate-500'}`}>
-                            {isCollected ? item.title : 'Undiscovered Office Prop'}
+                            {isCollected ? item.title : 'Undiscovered collectible'}
                           </h4>
                           {isCollected && (
                             <span className="text-[8px] font-pixel px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">
